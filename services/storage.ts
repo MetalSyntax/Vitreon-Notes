@@ -6,27 +6,34 @@ const DB_VERSION = 1;
 
 // --- Crypto Helpers ---
 
-// Generate a key or retrieve existing one (simulated device key for demo)
+const ENCRYPTION_KEY = import.meta.env.VITE_ENCRYPTION_KEY || 'default-secret-key-change-me';
+const ENCRYPTION_SALT = import.meta.env.VITE_ENCRYPTION_SALT || 'default-salt-change-me';
+
+/**
+ * Derives a cryptographic key from the environment variables using PBKDF2.
+ */
 const getCryptoKey = async (): Promise<CryptoKey> => {
-    const rawKey = localStorage.getItem('vitreon_enc_key');
-    if (rawKey) {
-        return window.crypto.subtle.importKey(
-            "jwk",
-            JSON.parse(rawKey),
-            { name: "AES-GCM" },
-            true,
-            ["encrypt", "decrypt"]
-        );
-    } else {
-        const key = await window.crypto.subtle.generateKey(
-            { name: "AES-GCM", length: 256 },
-            true,
-            ["encrypt", "decrypt"]
-        );
-        const exported = await window.crypto.subtle.exportKey("jwk", key);
-        localStorage.setItem('vitreon_enc_key', JSON.stringify(exported));
-        return key;
-    }
+    const encoder = new TextEncoder();
+    const baseKey = await window.crypto.subtle.importKey(
+        "raw",
+        encoder.encode(ENCRYPTION_KEY),
+        { name: "PBKDF2" },
+        false,
+        ["deriveKey"]
+    );
+
+    return window.crypto.subtle.deriveKey(
+        {
+            name: "PBKDF2",
+            salt: encoder.encode(ENCRYPTION_SALT),
+            iterations: 100000,
+            hash: "SHA-256"
+        },
+        baseKey,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt", "decrypt"]
+    );
 };
 
 const encryptData = async (data: string): Promise<{ iv: number[], cipher: number[] }> => {
@@ -44,6 +51,22 @@ const encryptData = async (data: string): Promise<{ iv: number[], cipher: number
     };
 };
 
+const getOldCryptoKey = async (): Promise<CryptoKey | null> => {
+    const rawKey = localStorage.getItem('vitreon_enc_key');
+    if (!rawKey) return null;
+    try {
+        return await window.crypto.subtle.importKey(
+            "jwk",
+            JSON.parse(rawKey),
+            { name: "AES-GCM" },
+            true,
+            ["encrypt", "decrypt"]
+        );
+    } catch {
+        return null;
+    }
+};
+
 const decryptData = async (ivArr: number[], cipherArr: number[]): Promise<string> => {
     const key = await getCryptoKey();
     const iv = new Uint8Array(ivArr);
@@ -56,8 +79,22 @@ const decryptData = async (ivArr: number[], cipherArr: number[]): Promise<string
         );
         return new TextDecoder().decode(decrypted);
     } catch (e) {
-        console.error("Decryption failed", e);
-        return "Error decrypting note.";
+        // Fallback to old key if available (migration support)
+        const oldKey = await getOldCryptoKey();
+        if (oldKey) {
+            try {
+                const decrypted = await window.crypto.subtle.decrypt(
+                    { name: "AES-GCM", iv: iv },
+                    oldKey,
+                    cipher
+                );
+                return new TextDecoder().decode(decrypted);
+            } catch (innerE) {
+                console.warn("Secondary decryption also failed.");
+            }
+        }
+        console.error("Decryption failed. Check your encryption keys in .env", e);
+        return "[Decryption Error: Check Keys]";
     }
 };
 
@@ -78,6 +115,12 @@ const openDB = (): Promise<IDBDatabase> => {
 };
 
 export const saveNote = async (note: Note): Promise<void> => {
+    // Safeguard: Do not save if the content indicates a decryption error
+    if (note.content.includes("[Decryption Error") || note.title.includes("[Decryption Error")) {
+        console.error("Refusing to save note with decryption error to prevent data loss.");
+        return;
+    }
+
     const db = await openDB();
     // Encrypt sensitive fields
     const encryptedContent = await encryptData(note.content);

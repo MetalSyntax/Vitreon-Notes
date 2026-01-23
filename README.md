@@ -75,9 +75,24 @@
 
 ---
 
+## 🚀 Deployment
+
+### Deploying to Vercel
+
+1.  **Push your code** to a GitHub, GitLab, or Bitbucket repository.
+2.  **Import the project** in the [Vercel Dashboard](https://vercel.com/new).
+3.  **Configure Environment Variables** in the Vercel project settings:
+    - `VITE_GOOGLE_DRIVE_CLIENT_ID`
+    - `VITE_GOOGLE_DRIVE_API_KEY`
+    - `VITE_ENCRYPTION_SALT`
+    - `VITE_ENCRYPTION_KEY`
+4.  **Deploy!** Vercel will automatically detect the Vite setup and build the project.
+
+---
+
 ## 🔐 Security Disclaimer
 
-Vitreon Notes is a local-first application. Your encryption keys (derived from your `.env` salt and key) are essential to decrypt your data. **If you lose your `.env` configuration or change the salt, previously encrypted notes will be unrecoverable.** Always keep a secure backup of your settings.
+Vitreon Notes is a local-first application. Your encryption keys (derived from your `VITE_ENCRYPTION_SALT` and `VITE_ENCRYPTION_KEY`) are essential to decrypt your data. **If you lose these variables or change them, previously encrypted notes will be unrecoverable.** Always keep a secure backup of your environment configuration.
 
 ---
 
