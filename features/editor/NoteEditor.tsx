@@ -127,7 +127,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
     };
 
     return (
-        <div className="absolute inset-0 z-50 bg-slate-50 dark:bg-[#030712] flex flex-col h-full animate-in fade-in slide-in-from-bottom-8 duration-500 overflow-hidden">
+        <div className="absolute inset-0 z-50 bg-[var(--bg-app)] flex flex-col h-full animate-in fade-in slide-in-from-bottom-8 duration-500 overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between p-6 z-10 shrink-0">
                 <button onClick={onBack} className="w-11 h-11 rounded-2xl glass-panel flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-indigo-500 transition-colors">

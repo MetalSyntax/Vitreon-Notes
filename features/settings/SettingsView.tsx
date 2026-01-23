@@ -41,7 +41,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                         </div>
                     </div>
                     
-                    <div className="flex gap-3 bg-black/5 dark:bg-white/5 p-2 rounded-2xl inline-flex w-full">
+                    <div className="flex flex-col sm:flex-row gap-3 bg-black/5 dark:bg-white/5 p-2 rounded-2xl inline-flex w-full">
                         <button 
                             onClick={() => setTheme('light')} 
                             className={`flex-1 py-4 rounded-xl flex items-center justify-center gap-3 text-sm font-black transition-all ${theme === 'light' ? 'bg-white shadow-xl text-indigo-600' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'}`}
@@ -53,6 +53,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                             className={`flex-1 py-4 rounded-xl flex items-center justify-center gap-3 text-sm font-black transition-all ${theme === 'dark' ? 'bg-slate-800 shadow-xl text-indigo-400' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'}`}
                         >
                             <span className="material-symbols-rounded">dark_mode</span> {t('themeDark')}
+                        </button>
+                        <button 
+                            onClick={() => setTheme('black')} 
+                            className={`flex-1 py-4 rounded-xl flex items-center justify-center gap-3 text-sm font-black transition-all ${theme === 'black' ? 'bg-black shadow-[0_0_20px_rgba(255,255,255,0.1)] text-white border border-white/20' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'}`}
+                        >
+                            <span className="material-symbols-rounded">contrast</span> {t('themeBlack')}
                         </button>
                     </div>
                 </div>

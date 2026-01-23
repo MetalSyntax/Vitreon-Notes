@@ -55,7 +55,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                     <div className="flex flex-col items-center mb-10 animate-smooth-in">
                         <div className="relative group">
                             <div className="w-28 h-28 rounded-[36px] bg-gradient-to-tr from-indigo-500 to-purple-600 p-1 shadow-xl shadow-indigo-500/20">
-                                <div className="w-full h-full rounded-[34px] bg-white dark:bg-[#030712] flex items-center justify-center overflow-hidden">
+                                <div className="w-full h-full rounded-[34px] bg-[var(--bg-app)] flex items-center justify-center overflow-hidden">
                                      {profileImage ? (
                                          <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
                                      ) : (

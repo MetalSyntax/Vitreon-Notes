@@ -124,6 +124,7 @@ export const es: typeof en = {
     appearanceTheme: 'Apariencia y Tema',
     themeLight: 'Modo Claro',
     themeDark: 'Modo Oscuro',
+    themeBlack: 'Negro Puro',
     backupAndRestore: 'Respaldo y Restauración',
     exportJson: 'Exportar Respaldo (JSON)',
     importJson: 'Importar Respaldo (JSON)',

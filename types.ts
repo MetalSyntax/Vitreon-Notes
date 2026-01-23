@@ -23,7 +23,7 @@ export interface Category {
     icon: string;
 }
 
-export type ThemeMode = 'light' | 'dark';
+export type ThemeMode = 'light' | 'dark' | 'black';
 
 export interface AppSettings {
     theme: ThemeMode;

@@ -14,8 +14,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ isOpen, onComp
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-2xl transition-all duration-700">
-            <div className="bg-white dark:bg-[#0f172a] w-full max-w-lg rounded-[48px] p-8 md:p-12 shadow-2xl border border-white/20 relative overflow-hidden animate-in zoom-in-95 duration-500">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/40 backdrop-blur-2xl transition-all duration-700">
+            <div className="bg-[var(--bg-app)] w-full max-w-lg rounded-[48px] p-8 md:p-12 shadow-2xl border border-white/20 relative overflow-hidden animate-in zoom-in-95 duration-500">
                 {/* Background decorative elements */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>

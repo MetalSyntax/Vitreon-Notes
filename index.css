@@ -20,6 +20,23 @@
   --bg-app: #030712;
 }
 
+.black {
+  --glass-bg: rgba(0, 0, 0, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --bg-app: #000000;
+}
+
+.black h1, .black h2, .black h3, .black h4, .black h5, .black h6, .black p, .black label, 
+.black .text-slate-800, .black .text-slate-700, .black .text-slate-600 {
+  color: #ffffff !important;
+}
+
+.black .text-slate-500, .black .text-slate-400, .black .text-secondary {
+  color: #a1a1aa !important;
+}
+
 body {
   font-family: 'Outfit', 'Inter', sans-serif;
   @apply transition-colors duration-300;
@@ -30,6 +47,10 @@ body {
 .dark body {
   background: radial-gradient(circle at top right, #1e1b4b, #030712), 
               radial-gradient(circle at bottom left, #1e1b4b, #030712);
+}
+
+.black body {
+  background: #000000;
 }
 
 .glass-panel {
@@ -51,6 +72,12 @@ body {
 .dark .glass-card {
   background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
+.black .glass-card {
+  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0) 100%);
+  box-shadow: none;
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .glass-card:hover {
@@ -138,6 +165,10 @@ body {
 
 .rich-text strong {
     @apply font-black text-slate-900 dark:text-white;
+}
+
+.black .rich-text strong {
+    color: #ffffff;
 }
 
 .rich-text em {

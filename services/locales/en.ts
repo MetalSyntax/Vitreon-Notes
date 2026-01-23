@@ -122,6 +122,7 @@ export const en = {
     appearanceTheme: 'Appearance & Theme',
     themeLight: 'Light Mode',
     themeDark: 'Dark Mode',
+    themeBlack: 'Pure Black',
     backupAndRestore: 'Backup & Restore',
     exportJson: 'Export Backup (JSON)',
     importJson: 'Import Backup (JSON)',

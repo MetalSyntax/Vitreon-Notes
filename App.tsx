@@ -26,7 +26,7 @@ const DEFAULT_CATEGORY = 'uncategorized';
 
 export default function App() {
     const { t } = useI18n();
-    const [theme, setTheme] = useState<ThemeMode>('dark');
+    const [theme, setTheme] = useState<ThemeMode>(() => (localStorage.getItem('vitreon_theme') as ThemeMode) || 'dark');
     const [view, setView] = useState<'home' | 'editor' | 'categories' | 'settings' | 'profile'>('home');
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [notes, setNotes] = useState<Note[]>([]);
@@ -52,7 +52,9 @@ export default function App() {
             const stored = await getNotes();
             setNotes(stored);
             setIsLoading(false);
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+            
+            const savedTheme = localStorage.getItem('vitreon_theme') as ThemeMode;
+            if (!savedTheme && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
                 setTheme('light');
             }
         };
@@ -60,8 +62,12 @@ export default function App() {
     }, []);
 
     useEffect(() => {
-        if (theme === 'dark') document.documentElement.classList.add('dark');
-        else document.documentElement.classList.remove('dark');
+        document.documentElement.classList.remove('light', 'dark', 'black');
+        document.documentElement.classList.add(theme);
+        if (theme === 'black') {
+            document.documentElement.classList.add('dark');
+        }
+        localStorage.setItem('vitreon_theme', theme);
     }, [theme]);
 
     const showToast = (msg: string) => {
@@ -285,14 +291,20 @@ export default function App() {
         localStorage.setItem('vitreon_onboarded', 'true');
     };
 
-    if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-slate-900"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div></div>;
+    if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-[var(--bg-app)]"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div></div>;
 
     return (
-        <div className={`min-h-screen w-full transition-colors duration-500 ${theme === 'dark' ? 'bg-[#0f172a] text-white' : 'bg-[#f0f4f8] text-slate-900'}`}>
-            <div className="fixed inset-0 z-0 pointer-events-none">
-                <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-purple-500/20 filter blur-[100px] opacity-50 animate-pulse"></div>
-                <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-blue-500/20 filter blur-[100px] opacity-50 animate-pulse" style={{animationDelay: '2s'}}></div>
-            </div>
+        <div className={`min-h-screen w-full transition-colors duration-500 ${
+            theme === 'black' ? 'bg-black text-white' : 
+            theme === 'dark' ? 'bg-[#0f172a] text-white' : 
+            'bg-[#f0f4f8] text-slate-900'
+        }`}>
+            {theme !== 'black' && (
+                <div className="fixed inset-0 z-0 pointer-events-none">
+                    <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-purple-500/20 filter blur-[100px] opacity-50 animate-pulse"></div>
+                    <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-blue-500/20 filter blur-[100px] opacity-50 animate-pulse" style={{animationDelay: '2s'}}></div>
+                </div>
+            )}
 
             <div className="relative z-10 w-full max-w-7xl mx-auto h-[100dvh] overflow-hidden md:border-x border-white/5 flex flex-col">
                 {/* Dashboard Header */}
@@ -379,8 +391,15 @@ export default function App() {
                         </button>
                         
                         <div className="relative -top-8">
-                             <button onClick={handleCreateNote} className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-indigo-500 via-indigo-600 to-purple-600 text-white shadow-2xl shadow-indigo-500/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all outline-none ring-4 ring-[#0f172a] animate-smooth-in">
-                                <span className="material-symbols-rounded text-3xl">add</span>
+                             <button 
+                                onClick={handleCreateNote} 
+                                className={`w-16 h-16 rounded-full bg-gradient-to-tr from-indigo-500 via-indigo-600 to-purple-600 text-white shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all outline-none ring-4 animate-smooth-in ${
+                                    theme === 'black' ? 'ring-black border-2 border-white' : 
+                                    theme === 'dark' ? 'ring-[#0f172a] border-2 border-white/50' : 
+                                    'ring-[#f0f4f8] border-2 border-black'
+                                }`}
+                             >
+                                <span className="material-symbols-rounded text-3xl font-bold">add</span>
                              </button>
                         </div>
 
