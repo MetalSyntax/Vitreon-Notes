@@ -26,9 +26,18 @@ export const HomeView: React.FC<HomeViewProps> = ({
     const { t, lang } = useI18n();
     const [searchQuery, setSearchQuery] = useState('');
     const [isListening, setIsListening] = useState(false);
+    const [sortBy, setSortBy] = useState<'date' | 'alpha'>(localStorage.getItem('vitreon_sort') as any || 'date');
+    const [layoutMode, setLayoutMode] = useState<'grid' | 'list' | 'card'>(localStorage.getItem('vitreon_layout') as any || 'grid');
 
     // Filtering logic
-    let filtered = notes;
+    let filtered = [...notes];
+    
+    // Sorting
+    filtered.sort((a, b) => {
+        if (sortBy === 'alpha') return a.title.localeCompare(b.title);
+        return b.updatedAt - a.updatedAt;
+    });
+
     if (showFavorites) {
         filtered = filtered.filter(n => n.isPinned);
     } else if (showArchived) {
@@ -50,12 +59,25 @@ export const HomeView: React.FC<HomeViewProps> = ({
     const pinned = !showFavorites && !showArchived ? filtered.filter(n => n.isPinned) : [];
     const mainList = !showFavorites && !showArchived ? filtered.filter(n => !n.isPinned) : filtered;
 
+    const toggleSort = () => {
+        const next = sortBy === 'date' ? 'alpha' : 'date';
+        setSortBy(next);
+        localStorage.setItem('vitreon_sort', next);
+    };
+
+    const nextLayout = () => {
+        const modes: ('grid' | 'list' | 'card')[] = ['grid', 'list', 'card'];
+        const next = modes[(modes.indexOf(layoutMode) + 1) % modes.length];
+        setLayoutMode(next);
+        localStorage.setItem('vitreon_layout', next);
+    };
+
     const currentCat = categories.find(c => c.id === selectedCategory);
 
     const startVoiceSearch = () => {
         const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
         if (!SpeechRecognition) {
-            alert("Speech Recognition not supported in this browser.");
+            alert(t('speechNotSupported'));
             return;
         }
 
@@ -72,8 +94,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
     return (
         <div className="flex flex-col h-full overflow-y-auto no-scrollbar pb-32 pt-2 transition-colors animate-in fade-in duration-500">
-            <div className="px-6 mb-8  stagger-1">
-                <div className="relative group">
+            <div className="px-6 mb-8  stagger-1 flex items-center gap-4">
+                <div className="relative group flex-1">
                     <span className="absolute left-5 top-4 material-symbols-rounded text-slate-400 group-focus-within:text-indigo-500 transition-colors">search</span>
                     <input
                         type="text" placeholder={t('search')}
@@ -87,6 +109,22 @@ export const HomeView: React.FC<HomeViewProps> = ({
                         mic
                     </button>
                 </div>
+                <div className="flex items-center gap-2">
+                    <button 
+                        onClick={toggleSort}
+                        className="w-12 h-12 rounded-2xl glass-card bg-white dark:bg-white/5 flex items-center justify-center text-slate-500 hover:text-indigo-500 transition-all shadow-lg active:scale-95"
+                        title={sortBy === 'date' ? t('date') : t('alphabetical')}
+                    >
+                        <span className="material-symbols-rounded">{sortBy === 'date' ? 'calendar_today' : 'sort_by_alpha'}</span>
+                    </button>
+                    <button 
+                        onClick={nextLayout}
+                        className="w-12 h-12 rounded-2xl glass-card bg-white dark:bg-white/5 flex items-center justify-center text-slate-500 hover:text-indigo-500 transition-all shadow-lg active:scale-95"
+                        title={t(layoutMode as any)}
+                    >
+                        <span className="material-symbols-rounded">{layoutMode === 'grid' ? 'grid_view' : layoutMode === 'list' ? 'view_list' : 'view_agenda'}</span>
+                    </button>
+                </div>
             </div>
 
             {selectedCategory && (
@@ -94,7 +132,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     <div className={`glass-card rounded-2xl p-4 flex items-center justify-between border-l-4 border-${currentCat?.color || 'slate'}-500`}>
                         <div className="flex items-center gap-3">
                             <span className="material-symbols-rounded text-indigo-500">{currentCat?.icon || 'folder'}</span>
-                            <span className="font-bold text-slate-700 dark:text-white">Collection: {currentCat?.name || 'Unknown'}</span>
+                            <span className="font-bold text-slate-700 dark:text-white">{t('collection')}: {currentCat?.name || t('unknown')}</span>
                         </div>
                         <button onClick={onClearCategory} className="w-8 h-8 rounded-full hover:bg-black/5 dark:hover:bg-white/5 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors">
                             <span className="material-symbols-rounded">close</span>
@@ -106,7 +144,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             {!showFavorites && !showArchived && pinned.length > 0 && (
                 <div className="mb-8  stagger-2">
                     <div className="px-6 mb-4">
-                        <h2 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">Pinned Notes</h2>
+                        <h2 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">{t('pinnedNotes')}</h2>
                     </div>
                     <div className="flex overflow-x-auto gap-5 px-6 pb-4 no-scrollbar snap-x">
                         {pinned.map(note => <NoteCard key={note.id} note={note} category={categories.find(c => c.id === note.category)} onClick={() => onNoteClick(note)} onPin={() => onPinNote(note)} layout="carousel" />)}
@@ -118,8 +156,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 <h2 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">{showFavorites ? t('favorites') : showArchived ? t('archived') : t('allNotes')}</h2>
             </div>
             
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 px-6 pb-20  stagger-4">
-                {mainList.map(note => <NoteCard key={note.id} note={note} category={categories.find(c => c.id === note.category)} onClick={() => onNoteClick(note)} onPin={() => onPinNote(note)} layout="grid" />)}
+            <div className={`
+                px-6 pb-20 stagger-4
+                ${layoutMode === 'grid' ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4' : 'flex flex-col gap-3'}
+                ${layoutMode === 'card' ? 'max-w-2xl mx-auto w-full' : ''}
+            `}>
+                {mainList.map(note => <NoteCard key={note.id} note={note} category={categories.find(c => c.id === note.category)} onClick={() => onNoteClick(note)} onPin={() => onPinNote(note)} layout={layoutMode} />)}
                 {mainList.length === 0 && !pinned.length && (
                     <div className="col-span-full flex flex-col items-center justify-center py-20 opacity-30">
                         <span className="material-symbols-rounded text-6xl mb-4 text-slate-400">stylus_note</span>

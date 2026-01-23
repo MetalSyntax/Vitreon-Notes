@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useI18n } from '../../services/i18n';
 
 interface VoiceNoteModalProps {
     isOpen: boolean;
@@ -7,6 +8,7 @@ interface VoiceNoteModalProps {
 }
 
 export const VoiceNoteModal: React.FC<VoiceNoteModalProps> = ({ isOpen, onClose, onSave }) => {
+    const { t } = useI18n();
     const [isRecording, setIsRecording] = useState(false);
     const [duration, setDuration] = useState(0);
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -47,7 +49,7 @@ export const VoiceNoteModal: React.FC<VoiceNoteModalProps> = ({ isOpen, onClose,
             }, 1000);
         } catch (err) {
             console.error("Failed to start recording", err);
-            alert("Microphone access denied or not available.");
+            alert(t('micDenied'));
         }
     };
 
@@ -75,17 +77,17 @@ export const VoiceNoteModal: React.FC<VoiceNoteModalProps> = ({ isOpen, onClose,
                     <span className={`material-symbols-rounded text-4xl ${isRecording ? 'text-red-500 animate-pulse' : 'text-indigo-400'}`}>mic</span>
                 </div>
                 
-                <h3 className="text-2xl font-bold mb-2">{isRecording ? 'Recording...' : 'Voice Note'}</h3>
+                <h3 className="text-2xl font-bold mb-2">{isRecording ? t('recording') : t('voiceNote')}</h3>
                 <div className="text-4xl font-mono mb-10 tracking-widest">{formatTime(duration)}</div>
 
                 <div className="flex gap-6 w-full">
                     {!isRecording ? (
                         <>
-                            <button onClick={onClose} className="flex-1 py-4 rounded-3xl glass-panel bg-white/5 font-bold uppercase tracking-widest text-slate-400 transition-all">Cancel</button>
-                            <button onClick={startRecording} className="flex-1 py-4 rounded-3xl bg-indigo-500 text-white font-bold uppercase tracking-widest shadow-xl shadow-indigo-500/20 active:scale-95 transition-all">Start</button>
+                            <button onClick={onClose} className="flex-1 py-4 rounded-3xl glass-panel bg-white/5 font-bold uppercase tracking-widest text-slate-400 transition-all">{t('cancel')}</button>
+                            <button onClick={startRecording} className="flex-1 py-4 rounded-3xl bg-indigo-500 text-white font-bold uppercase tracking-widest shadow-xl shadow-indigo-500/20 active:scale-95 transition-all">{t('start')}</button>
                         </>
                     ) : (
-                        <button onClick={stopRecording} className="w-full py-4 rounded-3xl bg-red-500 text-white font-bold uppercase tracking-widest shadow-xl shadow-red-500/20 active:scale-95 transition-all">Stop & Save</button>
+                        <button onClick={stopRecording} className="w-full py-4 rounded-3xl bg-red-500 text-white font-bold uppercase tracking-widest shadow-xl shadow-red-500/20 active:scale-95 transition-all">{t('stopAndSave')}</button>
                     )}
                 </div>
             </div>

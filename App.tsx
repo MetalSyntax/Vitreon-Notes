@@ -9,15 +9,17 @@ import { CategoriesView } from './features/categories/CategoriesView';
 import { SettingsView } from './features/settings/SettingsView';
 import { ProfileView } from './features/profile/ProfileView';
 import { useI18n } from './services/i18n';
+import { BiometricsService } from './services/biometrics';
+import { OnboardingModal } from './components/modals/OnboardingModal';
 
 // --- Constants ---
-const CATEGORIES: Category[] = [
-    { id: 'work', name: 'Work', color: 'blue', icon: 'work' },
-    { id: 'personal', name: 'Personal', color: 'emerald', icon: 'person' },
-    { id: 'ideas', name: 'Ideas', color: 'amber', icon: 'lightbulb' },
-    { id: 'travel', name: 'Travel', color: 'purple', icon: 'flight' },
-    { id: 'fitness', name: 'Fitness', color: 'rose', icon: 'fitness_center' },
-    { id: 'uncategorized', name: 'General', color: 'slate', icon: 'description' },
+const CATEGORIES = (t: any): Category[] => [
+    { id: 'work', name: t('work'), color: 'blue', icon: 'work' },
+    { id: 'personal', name: t('personal'), color: 'emerald', icon: 'person' },
+    { id: 'ideas', name: t('ideas'), color: 'amber', icon: 'lightbulb' },
+    { id: 'travel', name: t('travel'), color: 'purple', icon: 'flight' },
+    { id: 'fitness', name: t('fitness'), color: 'rose', icon: 'fitness_center' },
+    { id: 'uncategorized', name: t('general'), color: 'slate', icon: 'description' },
 ];
 
 const DEFAULT_CATEGORY = 'uncategorized';
@@ -28,7 +30,7 @@ export default function App() {
     const [view, setView] = useState<'home' | 'editor' | 'categories' | 'settings' | 'profile'>('home');
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [notes, setNotes] = useState<Note[]>([]);
-    const [categories, setCategories] = useState<Category[]>(CATEGORIES);
+    const [categories, setCategories] = useState<Category[]>(CATEGORIES(t));
     const [currentNote, setCurrentNote] = useState<Note | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -39,6 +41,10 @@ export default function App() {
     const [masterPin, setMasterPin] = useState<string | null>(localStorage.getItem('vitreon_master_pin'));
     const [isBiometricsEnabled, setIsBiometricsEnabled] = useState<boolean>(localStorage.getItem('vitreon_biometrics') === 'true');
     const [profileImage, setProfileImage] = useState<string | null>(localStorage.getItem('vitreon_profile_image'));
+    const [userName, setUserName] = useState(localStorage.getItem('vitreon_user_name') || 'Vitreon User');
+    const [userEmail, setUserEmail] = useState(localStorage.getItem('vitreon_user_email') || 'vitreon.notes@example.com');
+    const [userBio, setUserBio] = useState(localStorage.getItem('vitreon_user_bio') || 'Digital minimalist and note-taking enthusiast.');
+    const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(!localStorage.getItem('vitreon_onboarded'));
 
     // Initial Load
     useEffect(() => {
@@ -84,7 +90,7 @@ export default function App() {
         setNotes(await getNotes());
         setCurrentNote(null);
         setView('home');
-        showToast("Note saved.");
+        showToast(t('noteSaved'));
     };
 
     const handleDeleteNote = (id: string) => {
@@ -97,19 +103,19 @@ export default function App() {
         setNotes(await getNotes());
         if (currentNote?.id === confirmModal.noteId) { setCurrentNote(null); setView('home'); }
         setConfirmModal({ open: false });
-        showToast("Note deleted.");
+        showToast(t('noteDeleted'));
     };
 
     const handleArchiveNote = async (note: Note) => {
         const updated = { ...note, isArchived: !note.isArchived };
         await handleSaveNote(updated);
-        showToast(updated.isArchived ? "Archived." : "Unarchived.");
+        showToast(updated.isArchived ? t('archivedToast') : t('unarchivedToast'));
     };
 
     const handlePinNote = async (note: Note) => {
         const updated = { ...note, isPinned: !note.isPinned };
         await handleSaveNote(updated);
-        showToast(updated.isPinned ? "Pinned." : "Unpinned.");
+        showToast(updated.isPinned ? t('pinnedToast') : t('unpinnedToast'));
     };
 
     // Locking Logic
@@ -117,7 +123,7 @@ export default function App() {
         if (note.isLocked) {
             const updated = { ...note, isLocked: false, lockPin: undefined };
             handleSaveNote(updated);
-            showToast("Lock removed.");
+            showToast(t('lockRemoved'));
         } else {
             setCurrentNote(note); // Ensure we are targeting this note
             setPinModal({ open: true, mode: 'set' });
@@ -129,12 +135,12 @@ export default function App() {
             const updated = { ...currentNote, isLocked: true, lockPin: pin };
             await handleSaveNote(updated);
             setPinModal({ ...pinModal, open: false });
-            showToast("Note locked.");
+            showToast(t('lockedToast'));
         } else if (pinModal.mode === 'set-master') {
             setMasterPin(pin);
             localStorage.setItem('vitreon_master_pin', pin);
             setPinModal({ ...pinModal, open: false });
-            showToast("Master PIN updated.");
+            showToast(t('masterPinUpdated'));
         } else if (pinModal.mode === 'unlock') {
             const noteToUnlock = notes.find(n => n.id === pinModal.noteId);
             if (noteToUnlock && noteToUnlock.lockPin === pin) {
@@ -142,21 +148,51 @@ export default function App() {
                 setPinModal({ ...pinModal, open: false });
                 setView('editor');
             } else {
-                alert("Incorrect PIN");
+                alert(t('incorrectPin'));
             }
         }
     };
 
-    const handleToggleBiometrics = () => {
-        const newValue = !isBiometricsEnabled;
-        setIsBiometricsEnabled(newValue);
-        localStorage.setItem('vitreon_biometrics', String(newValue));
-        showToast(newValue ? "Biometrics enabled." : "Biometrics disabled.");
+    const handleToggleBiometrics = async () => {
+        const isSupported = await BiometricsService.isSupported();
+        if (!isSupported) {
+            alert(t('biometricsNotSupported'));
+            return;
+        }
+
+        if (!isBiometricsEnabled) {
+            // Activating: Try to authenticate once to verify
+            const success = await BiometricsService.authenticate();
+            if (success) {
+                setIsBiometricsEnabled(true);
+                localStorage.setItem('vitreon_biometrics', 'true');
+                showToast(t('biometricsEnabled'));
+            } else {
+                showToast(t('biometricsFailed'));
+            }
+        } else {
+            // Disabling
+            setIsBiometricsEnabled(false);
+            localStorage.setItem('vitreon_biometrics', 'false');
+            showToast(t('biometricsDisabled'));
+        }
     };
 
-    const handleNoteClick = (note: Note) => {
-        if (note.isLocked) setPinModal({ open: true, mode: 'unlock', noteId: note.id });
-        else { setCurrentNote(note); setView('editor'); }
+    const handleNoteClick = async (note: Note) => {
+        if (note.isLocked) {
+            if (isBiometricsEnabled) {
+                const success = await BiometricsService.authenticate();
+                if (success) {
+                    setCurrentNote(note);
+                    setView('editor');
+                    return;
+                }
+            }
+            setPinModal({ open: true, mode: 'unlock', noteId: note.id });
+        } else {
+            setCurrentNote(note);
+            setView('editor');
+        }
     };
 
     const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -179,13 +215,15 @@ export default function App() {
                         };
                         await saveNote(newNote);
                         setNotes(await getNotes());
-                        showToast("Imported Markdown note.");
+                        showToast(t('importedMd'));
                     } else {
-                        const count = await importDataFromJSON(content);
-                        setNotes(await getNotes());
-                        showToast(`Imported ${count} notes.`);
+                        if (confirm(t('confirmImport'))) {
+                            const count = await importDataFromJSON(content);
+                            setNotes(await getNotes());
+                            showToast(t('importedNotes').replace('{count}', String(count)));
+                        }
                     }
-                } catch { showToast("Import failed."); }
+                } catch { showToast(t('importFailed')); }
             }
             e.target.value = '';
         };
@@ -194,7 +232,7 @@ export default function App() {
 
     const handleExportMarkdown = async () => {
         const notesToExport = notes.filter(n => !n.isArchived);
-        if (notesToExport.length === 0) return showToast("No notes to export.");
+        if (notesToExport.length === 0) return showToast(t('noNotesExport'));
         
         // Since we can't install JSZip due to system restrictions, 
         // we'll trigger the export of all files. 
@@ -212,24 +250,39 @@ export default function App() {
                 URL.revokeObjectURL(url);
             }, index * 100); // Staggered to prevent browser blocking
         });
-        showToast(`Exporting ${notesToExport.length} files...`);
+        showToast(t('exportedFiles').replace('{count}', String(notesToExport.length)));
     };
 
     const handleAddCategory = (cat: Category) => {
         setCategories([...categories, cat]);
-        showToast("Category added.");
+        showToast(t('categoryAdded'));
     };
 
     const handleDeleteCategory = (id: string) => {
-        if (id === DEFAULT_CATEGORY) return alert("Default category cannot be deleted.");
+        if (id === DEFAULT_CATEGORY) return alert(t('categoryDeleteError'));
         setCategories(categories.filter(c => c.id !== id));
-        showToast("Category removed.");
+        showToast(t('categoryRemoved'));
     };
 
     const handleUpdateProfileImage = (img: string) => {
         setProfileImage(img);
         localStorage.setItem('vitreon_profile_image', img);
-        showToast("Profile image updated.");
+        showToast(t('profileImageUpdated'));
+    };
+
+    const handleUpdateProfile = (name: string, email: string, bio: string) => {
+        setUserName(name);
+        setUserEmail(email);
+        setUserBio(bio);
+        localStorage.setItem('vitreon_user_name', name);
+        localStorage.setItem('vitreon_user_email', email);
+        localStorage.setItem('vitreon_user_bio', bio);
+        showToast(t('noteSaved'));
+    };
+
+    const handleOnboardingComplete = () => {
+        setIsOnboardingOpen(false);
+        localStorage.setItem('vitreon_onboarded', 'true');
     };
 
     if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-slate-900"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div></div>;
@@ -281,10 +334,12 @@ export default function App() {
                     {view === 'settings' && (
                         <SettingsView 
                             theme={theme} setTheme={setTheme} 
-                            onExport={() => { exportDataToJSON().then(json => { const blob = new Blob([json], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `vitreon_backup_${new Date().toISOString().slice(0, 10)}.json`; a.click(); showToast("Exported."); }); }} 
+                            onExport={() => { exportDataToJSON().then(json => { const blob = new Blob([json], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `vitreon_backup_${new Date().toISOString().slice(0, 10)}.json`; a.click(); showToast(t('exported')); }); }} 
                             onImport={handleImport} 
                             onExportMD={handleExportMarkdown}
                             onImportMD={() => document.getElementById('md-import')?.click()}
+                            onExportGDrive={() => showToast('Google Drive Export: ' + t('noNotesExport'))}
+                            onImportGDrive={() => showToast('Google Drive Import: ' + t('importFailed'))}
                         />
                     )}
                     {view === 'profile' && (
@@ -298,6 +353,10 @@ export default function App() {
                             onToggleBiometrics={handleToggleBiometrics}
                             profileImage={profileImage}
                             onUpdateProfileImage={handleUpdateProfileImage}
+                            userName={userName}
+                            userEmail={userEmail}
+                            userBio={userBio}
+                            onUpdateProfile={handleUpdateProfile}
                         />
                     )}
                     {view === 'editor' && currentNote && (
@@ -335,14 +394,19 @@ export default function App() {
                 )}
             </div>
 
+            <OnboardingModal 
+                isOpen={isOnboardingOpen} 
+                onComplete={handleOnboardingComplete} 
+                onImport={handleImport}
+            />
             <PinModal isOpen={pinModal.open} onClose={() => setPinModal({...pinModal, open: false})} isSettingPin={pinModal.mode === 'set' || pinModal.mode === 'set-master'} onUnlock={handlePinResult} />
             <ConfirmModal 
                 isOpen={confirmModal.open} 
                 title={t('deleteNote')} 
-                message="This action cannot be undone. Are you sure you want to permanently delete this note?" 
+                message={t('deleteMessage')} 
                 onConfirm={confirmDelete} 
                 onCancel={() => setConfirmModal({ open: false })}
-                confirmText={t('save')}
+                confirmText={t('delete')}
                 cancelText={t('cancel')}
             />
             <input type="file" id="md-import" className="hidden" accept=".md,.json" onChange={handleImport} />

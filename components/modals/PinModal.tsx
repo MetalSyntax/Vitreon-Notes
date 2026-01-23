@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useI18n } from '../../services/i18n';
 
 interface PinModalProps {
     isOpen: boolean;
@@ -8,6 +9,7 @@ interface PinModalProps {
 }
 
 export const PinModal: React.FC<PinModalProps> = ({ isOpen, onClose, onUnlock, isSettingPin = false }) => {
+    const { t } = useI18n();
     const [pin, setPin] = useState('');
     const [error, setError] = useState('');
 
@@ -23,7 +25,7 @@ export const PinModal: React.FC<PinModalProps> = ({ isOpen, onClose, onUnlock, i
 
     const handleSubmit = () => {
         if (pin.length !== 4) {
-            setError('PIN must be 4 digits');
+            setError(t('pinMustBe4'));
             return;
         }
         onUnlock(pin);
@@ -35,10 +37,10 @@ export const PinModal: React.FC<PinModalProps> = ({ isOpen, onClose, onUnlock, i
         <div className="fixed inset-0 z-[80] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-6">
             <div className="bg-white dark:bg-slate-800 w-full max-w-xs rounded-3xl p-6 shadow-2xl border border-white/10">
                 <h3 className="text-center font-bold text-xl mb-2 text-slate-800 dark:text-white">
-                    {isSettingPin ? 'Secure Access' : 'Enter PIN'}
+                    {isSettingPin ? t('secureAccess') : t('enterPin')}
                 </h3>
                 <p className="text-center text-slate-500 dark:text-slate-400 text-sm mb-6">
-                    {isSettingPin ? 'Create a 4-digit code to protect your privacy.' : 'This resource is locked.'}
+                    {isSettingPin ? t('protectPrivacy') : t('resourceLocked')}
                 </p>
 
                 <div className="flex justify-center gap-4 mb-8">
@@ -55,7 +57,7 @@ export const PinModal: React.FC<PinModalProps> = ({ isOpen, onClose, onUnlock, i
                             {num}
                         </button>
                     ))}
-                    <button onClick={onClose} className="h-14 flex items-center justify-center text-slate-500 font-medium">Cancel</button>
+                    <button onClick={onClose} className="h-14 flex items-center justify-center text-slate-500 font-medium">{t('cancel')}</button>
                     <button onClick={() => handleNum('0')} className="h-14 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-xl font-bold text-slate-700 dark:text-white">0</button>
                     <button onClick={handleBackspace} className="h-14 flex items-center justify-center text-slate-500 hover:text-red-400">
                         <span className="material-symbols-rounded">backspace</span>
@@ -63,7 +65,7 @@ export const PinModal: React.FC<PinModalProps> = ({ isOpen, onClose, onUnlock, i
                 </div>
                 
                 <button onClick={handleSubmit} className="w-full py-3 bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/25 active:scale-95 transition-transform">
-                    {isSettingPin ? 'Confirm' : 'Access'}
+                    {isSettingPin ? t('confirm') : t('access')}
                 </button>
             </div>
         </div>

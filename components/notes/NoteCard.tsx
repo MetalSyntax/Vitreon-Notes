@@ -1,23 +1,30 @@
 import React from 'react';
 import { Note, Category } from '../../types';
 import { RichText } from '../ui/RichText';
+import { useI18n } from '../../services/i18n';
 
 interface NoteCardProps {
     note: Note;
     category?: Category;
     onClick: () => void;
     onPin?: () => void;
-    layout?: 'grid' | 'carousel';
+    layout?: 'grid' | 'carousel' | 'list' | 'card';
 }
 
 export const NoteCard: React.FC<NoteCardProps> = ({ note, category, onClick, onPin, layout = 'grid' }) => {
+    const { t } = useI18n();
     const isCarousel = layout === 'carousel';
+    const isList = layout === 'list';
+    const isCard = layout === 'card';
 
     return (
         <div 
             onClick={onClick}
-            className={`glass-card rounded-3xl cursor-pointer p-0 overflow-hidden relative group transition-all hover:scale-[1.02] active:scale-[0.98]
-            ${isCarousel ? 'snap-start min-w-[280px] h-64' : 'flex flex-col h-full'}`}
+            className={`glass-card rounded-[32px] cursor-pointer p-0 overflow-hidden relative group transition-all hover:scale-[1.02] active:scale-[0.98]
+            ${isCarousel ? 'snap-start min-w-[280px] h-64' : ''}
+            ${isList ? 'flex flex-row items-center h-24 mb-2' : ''}
+            ${isCard ? 'flex flex-col h-auto mb-4' : ''}
+            ${layout === 'grid' ? 'flex flex-col h-full' : ''}`}
         >
             {/* Quick Pin Toggle */}
             {onPin && (
@@ -33,15 +40,15 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, category, onClick, onP
             )}
 
             {note.isLocked ? (
-                <div className="flex flex-col items-center justify-center text-slate-500 h-full py-12">
-                    <span className="material-symbols-rounded text-4xl mb-2">lock</span>
-                    <span className="text-sm font-bold tracking-widest uppercase opacity-60">Locked</span>
+                <div className={`flex items-center justify-center text-slate-500 ${isList ? 'w-full' : 'h-full py-12 flex-col'}`}>
+                    <span className={`material-symbols-rounded ${isList ? 'text-2xl mr-4' : 'text-4xl mb-2'}`}>lock</span>
+                    <span className="text-sm font-bold tracking-widest uppercase opacity-60">{t('locked')}</span>
                 </div>
             ) : (
-                <div className="flex flex-col h-full">
+                <div className={`flex ${isList ? 'flex-row w-full' : 'flex-col h-full'}`}>
                     {/* Media Header */}
-                    {(isCarousel || note.images.length > 0) && (
-                        <div className={`relative ${isCarousel ? 'h-36' : (note.images.length > 0 ? 'h-32' : 'h-0')}`}>
+                    {(isCarousel || isCard || (note.images.length > 0 && !isList)) && (
+                        <div className={`relative shrink-0 ${isCarousel ? 'h-36' : (isCard ? 'h-48' : (note.images.length > 0 ? 'h-32' : 'h-0'))}`}>
                             {note.images.length > 0 ? (
                                 <img src={note.images[0]} alt="Note" className="w-full h-full object-cover" />
                             ) : (
@@ -52,32 +59,38 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, category, onClick, onP
                         </div>
                     )}
 
-                    <div className="p-5 flex-1 flex flex-col justify-between">
+                    {isList && note.images.length > 0 && (
+                        <div className="w-24 h-full shrink-0">
+                             <img src={note.images[0]} alt="Note" className="w-full h-full object-cover" />
+                        </div>
+                    )}
+
+                    <div className={`p-5 flex-1 flex flex-col justify-between overflow-hidden`}>
                         <div>
-                            <div className="flex justify-between items-start mb-2 pr-8">
-                                <h3 className="font-bold text-lg text-slate-800 dark:text-white line-clamp-1 group-hover:text-indigo-500 transition-colors tracking-tight">{note.title || "Untitled"}</h3>
+                            <div className="flex justify-between items-start mb-1 pr-8">
+                                <h3 className="font-bold text-lg text-slate-800 dark:text-white line-clamp-1 group-hover:text-indigo-500 transition-colors tracking-tight">{note.title || t('untitled')}</h3>
                                 {!isCarousel && (
-                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">
+                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest shrink-0 ml-2">
                                         {new Date(note.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric'})}
                                     </span>
                                 )}
                             </div>
-                            <div className={`text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium ${isCarousel ? 'line-clamp-2' : 'line-clamp-2'}`}>
+                            <div className={`text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium ${isList ? 'line-clamp-1' : 'line-clamp-3'}`}>
                                 {note.isChecklist ? (
-                                    <p className="opacity-60 flex items-center gap-2"><span className="material-symbols-rounded text-sm">checklist</span> Checklist Items...</p>
+                                    <p className="opacity-60 flex items-center gap-2"><span className="material-symbols-rounded text-sm">checklist</span> {t('tasksCount')}</p>
                                 ) : (
-                                    <RichText content={note.content || "No content..."} className="line-clamp-2" />
+                                    <RichText content={note.content || t('noContent')} className={isList ? "line-clamp-1" : "line-clamp-3"} />
                                 )}
                             </div>
                         </div>
 
-                        {!isCarousel && (
-                            <div className="flex items-center justify-between mt-4">
+                        {(!isCarousel) && (
+                            <div className={`flex items-center justify-between mt-2 ${isList ? 'hidden' : ''}`}>
                                 <div className="flex items-center gap-2">
                                      <div className={`w-7 h-7 rounded-lg bg-black/5 dark:bg-white/5 flex items-center justify-center text-${category?.color || 'slate'}-500 dark:text-${category?.color || 'slate'}-400`}>
                                          <span className="material-symbols-rounded text-base">{category?.icon || 'description'}</span>
                                      </div>
-                                     <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500">{category?.name || 'General'}</span>
+                                     <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500">{t(category?.id as any) || category?.name || t('general')}</span>
                                 </div>
                                 <div className="flex gap-2">
                                     {note.images.length > 1 && <span className="material-symbols-rounded text-sm text-slate-400 dark:text-slate-600">image</span>}

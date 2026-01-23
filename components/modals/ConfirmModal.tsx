@@ -1,4 +1,5 @@
 import React from 'react';
+import { useI18n } from '../../services/i18n';
 
 interface ConfirmModalProps {
     isOpen: boolean;
@@ -13,8 +14,12 @@ interface ConfirmModalProps {
 
 export const ConfirmModal: React.FC<ConfirmModalProps> = ({ 
     isOpen, title, message, onConfirm, onCancel, 
-    confirmText = "Delete", cancelText = "Cancel", type = 'danger' 
+    confirmText, cancelText, type = 'danger' 
 }) => {
+    const { t } = useI18n();
+    const finalConfirm = confirmText || (type === 'danger' ? t('delete') : t('confirm'));
+    const finalCancel = cancelText || t('cancel');
+
     if (!isOpen) return null;
 
     return (
@@ -30,13 +35,13 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
                         onClick={onCancel}
                         className="flex-1 py-3 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors"
                     >
-                        {cancelText}
+                        {finalCancel}
                     </button>
                     <button 
                         onClick={onConfirm}
                         className={`flex-1 py-3 rounded-xl text-white font-semibold transition-transform active:scale-95 ${type === 'danger' ? 'bg-red-500 shadow-lg shadow-red-500/20' : 'bg-indigo-500 shadow-lg shadow-indigo-500/20'}`}
                     >
-                        {confirmText}
+                        {finalConfirm}
                     </button>
                 </div>
             </div>

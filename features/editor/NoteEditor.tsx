@@ -170,11 +170,11 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
                             <div className="absolute right-0 mt-2 w-48 glass-panel rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-200 bg-white dark:bg-[#1e293b]">
                                 <button onClick={() => { onLock(note); setShowMenu(false); }} className="w-full flex items-center gap-3 px-4 py-2 hover:bg-black/5 dark:hover:bg-white/5 text-slate-700 dark:text-slate-300 transition-colors">
                                     <span className="material-symbols-rounded text-lg">{note.isLocked ? 'lock_open' : 'lock'}</span>
-                                    <span className="text-sm font-medium">{note.isLocked ? 'Unlock Note' : 'Lock Note'}</span>
+                                    <span className="text-sm font-medium">{note.isLocked ? t('unlockNote') : t('lockNote')}</span>
                                 </button>
                                 <button onClick={() => { onArchive(note); setShowMenu(false); }} className="w-full flex items-center gap-3 px-4 py-2 hover:bg-black/5 dark:hover:bg-white/5 text-slate-700 dark:text-slate-300 transition-colors">
                                     <span className="material-symbols-rounded text-lg">{note.isArchived ? 'unarchive' : 'archive'}</span>
-                                    <span className="text-sm font-medium">{note.isArchived ? 'Unarchive' : 'Archive'}</span>
+                                    <span className="text-sm font-medium">{note.isArchived ? t('unarchive') : t('archive')}</span>
                                 </button>
                                 <div className="my-1 border-t border-black/5 dark:border-white/5"></div>
                                 <button onClick={() => { onDelete(note.id); setShowMenu(false); }} className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-500/10 text-red-500 transition-colors">
@@ -192,17 +192,17 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
                 <div className="mx-6 mb-6 p-2 rounded-[24px] glass-panel flex items-center justify-between gap-4 overflow-x-auto no-scrollbar shadow-sm bg-white/40 dark:bg-white/5 shrink-0 animate-smooth-in">
                     <div className="flex items-center gap-1 shrink-0">
                         <div className="flex items-center gap-1 border-r border-black/5 dark:border-white/10 pr-2">
-                            <button onClick={() => applyFormatting('**')} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title="Bold"><span className="material-symbols-rounded">format_bold</span></button>
-                            <button onClick={() => applyFormatting('*')} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title="Italic"><span className="material-symbols-rounded">format_italic</span></button>
-                            <button onClick={() => applyFormatting('++', '++')} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title="Underline"><span className="material-symbols-rounded">format_underlined</span></button>
-                            <button onClick={toggleChecklist} className={`p-2.5 rounded-xl transition-all ${note.isChecklist ? 'bg-indigo-500 text-white' : 'hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500'}`} title="Checklist"><span className="material-symbols-rounded">format_list_bulleted</span></button>
+                            <button onClick={() => applyFormatting('**')} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title={t('bold')}><span className="material-symbols-rounded">format_bold</span></button>
+                            <button onClick={() => applyFormatting('*')} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title={t('italic')}><span className="material-symbols-rounded">format_italic</span></button>
+                            <button onClick={() => applyFormatting('++', '++')} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title={t('underline')}><span className="material-symbols-rounded">format_underlined</span></button>
+                            <button onClick={toggleChecklist} className={`p-2.5 rounded-xl transition-all ${note.isChecklist ? 'bg-indigo-500 text-white' : 'hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500'}`} title={t('checklist')}><span className="material-symbols-rounded">format_list_bulleted</span></button>
                         </div>
                         
                         <div className="flex items-center gap-1 pl-1">
-                            <button onClick={() => fileInputRef.current?.click()} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title="Upload Image"><span className="material-symbols-rounded">image</span></button>
-                            <button onClick={() => cameraInputRef.current?.click()} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title="Capture Photo"><span className="material-symbols-rounded">photo_camera</span></button>
-                            <button onClick={() => setIsVoiceOpen(true)} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title="Voice Note"><span className="material-symbols-rounded">mic</span></button>
-                            <button onClick={() => setIsDrawingOpen(true)} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title="Sketch"><span className="material-symbols-rounded">draw</span></button>
+                            <button onClick={() => fileInputRef.current?.click()} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title={t('uploadImage')}><span className="material-symbols-rounded">image</span></button>
+                            <button onClick={() => cameraInputRef.current?.click()} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title={t('capturePhoto')}><span className="material-symbols-rounded">photo_camera</span></button>
+                            <button onClick={() => setIsVoiceOpen(true)} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title={t('voiceNote')}><span className="material-symbols-rounded">mic</span></button>
+                            <button onClick={() => setIsDrawingOpen(true)} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title={t('sketch')}><span className="material-symbols-rounded">draw</span></button>
                         </div>
                     </div>
 
@@ -221,7 +221,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-[10px] font-bold uppercase tracking-widest border ${isViewMode ? 'bg-slate-500/10 text-slate-500 border-slate-500/20' : (showCategoryMenu ? 'bg-indigo-500 text-white border-indigo-500' : 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20 hover:bg-indigo-500/20')}`}
                     >
                         <span className="material-symbols-rounded text-sm">{currentCat?.icon || 'folder'}</span>
-                        {currentCat?.name || 'General'}
+                        {t(currentCat?.id as any) || currentCat?.name || t('general')}
                         {!isViewMode && <span className="material-symbols-rounded text-sm transition-transform duration-300" style={{ transform: showCategoryMenu ? 'rotate(180deg)' : 'rotate(0deg)' }}>expand_more</span>}
                     </button>
                     
@@ -237,7 +237,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
                                         <div className={`w-8 h-8 rounded-xl flex items-center justify-center bg-${c.color}-500/10 text-${c.color}-500`}>
                                             <span className="material-symbols-rounded text-lg">{c.icon}</span>
                                         </div>
-                                        <span className={`text-[11px] font-bold uppercase tracking-widest ${note.category === c.id ? 'text-indigo-500' : 'text-slate-600 dark:text-slate-300'}`}>{c.name}</span>
+                                        <span className={`text-[11px] font-bold uppercase tracking-widest ${note.category === c.id ? 'text-indigo-500' : 'text-slate-600 dark:text-slate-300'}`}>{t(c.id as any) || c.name}</span>
                                     </div>
                                     {note.category === c.id && <span className="material-symbols-rounded text-indigo-500 text-sm">check_circle</span>}
                                 </button>
@@ -247,7 +247,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
                 </div>
 
                 {isViewMode ? (
-                    <h1 className="text-4xl font-bold text-slate-800 dark:text-white mb-6 tracking-tight leading-tight">{note.title || "Untitled Note"}</h1>
+                    <h1 className="text-4xl font-bold text-slate-800 dark:text-white mb-6 tracking-tight leading-tight">{note.title || t('untitled')}</h1>
                 ) : (
                     <input
                         className="w-full bg-transparent text-4xl font-bold placeholder-slate-300 dark:placeholder-slate-700 border-none focus:ring-0 outline-none p-0 mb-6 text-slate-800 dark:text-white tracking-tight  stagger-1"
@@ -279,7 +279,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
                                             <input 
                                                 className={`w-full bg-transparent border-none focus:ring-0 outline-none p-0 text-lg text-slate-700 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-600 ${isChecked ? 'line-through opacity-50' : ''}`}
                                                 value={text}
-                                                placeholder="Task item..."
+                                                placeholder={t('taskItem')}
                                                 onChange={(e) => {
                                                     const lines = note.content.split('\n');
                                                     lines[idx] = (isChecked ? '[x] ' : '[ ] ') + e.target.value;
@@ -307,7 +307,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
                                     onClick={() => setNote({ ...note, content: note.content + (note.content ? '\n[ ] ' : '[ ] ') })}
                                     className="flex items-center gap-2 text-indigo-500 dark:text-indigo-400 text-sm font-bold uppercase tracking-widest mt-4 hover:translate-x-1 transition-transform"
                                 >
-                                    <span className="material-symbols-rounded">add</span> Add Task
+                                    <span className="material-symbols-rounded">add</span> {t('addTask')}
                                 </button>
                             )}
                         </div>
@@ -371,8 +371,8 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
                                         </div>
                                         <div className="flex-1">
                                             <div className="flex justify-between items-center mb-2">
-                                                <span className="text-[10px] font-extrabold text-indigo-500 dark:text-indigo-400 uppercase tracking-widest">Voice Note {idx + 1}</span>
-                                                <span className="text-[10px] text-slate-400 font-bold">Audio Clip</span>
+                                                <span className="text-[10px] font-extrabold text-indigo-500 dark:text-indigo-400 uppercase tracking-widest">{t('voiceNote')} {idx + 1}</span>
+                                                <span className="text-[10px] text-slate-400 font-bold">{t('audioClip')}</span>
                                             </div>
                                             <div className="h-2 bg-indigo-500/10 dark:bg-white/10 rounded-full overflow-hidden">
                                                 <div className="w-full h-full bg-indigo-500 rounded-full"></div>
@@ -407,7 +407,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
                                 <div className="flex items-center gap-2 px-4 py-2 rounded-full glass-panel bg-white/50 dark:bg-white/5 border-black/10 dark:border-white/10 text-slate-400 dark:text-slate-600 focus-within:text-indigo-500 focus-within:border-indigo-500/50 transition-all">
                                     <span className="material-symbols-rounded text-sm">add</span>
                                     <input 
-                                        placeholder="TAG"
+                                        placeholder={t('tag')}
                                         value={tagInput}
                                         onChange={e => setTagInput(e.target.value)}
                                         onKeyDown={e => {

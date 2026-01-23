@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Category } from '../../types';
+import { useI18n } from '../../services/i18n';
 
 interface CategoryModalProps {
     isOpen: boolean;
@@ -11,6 +12,7 @@ const COLORS = ['blue', 'emerald', 'amber', 'purple', 'rose', 'slate'];
 const ICONS = ['work', 'person', 'lightbulb', 'flight', 'fitness_center', 'description', 'shopping_cart', 'favorite', 'home', 'star'];
 
 export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, onSave }) => {
+    const { t } = useI18n();
     const [name, setName] = useState('');
     const [color, setColor] = useState('blue');
     const [icon, setIcon] = useState('description');
@@ -32,19 +34,19 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, o
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="glass-card w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-in zoom-in-95 duration-200">
-                <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4">New Category</h3>
+                <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4">{t('newCategory')}</h3>
                 
                 <div className="mb-4">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Name</label>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">{t('name')}</label>
                     <input 
                         type="text" value={name} onChange={e => setName(e.target.value)}
-                        placeholder="e.g. Shopping"
+                        placeholder={t('categoryPlaceholder')}
                         className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 border-none focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800 dark:text-white"
                     />
                 </div>
 
                 <div className="mb-4">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Color</label>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">{t('color')}</label>
                     <div className="flex flex-wrap gap-2">
                         {COLORS.map(c => (
                             <button 
@@ -59,7 +61,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, o
                 </div>
 
                 <div className="mb-6">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Icon</label>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">{t('icon')}</label>
                     <div className="grid grid-cols-5 gap-2">
                         {ICONS.map(i => (
                             <button 
@@ -73,8 +75,8 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, o
                 </div>
 
                 <div className="flex gap-3">
-                    <button onClick={onClose} className="flex-1 py-3 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold transition-colors">Cancel</button>
-                    <button onClick={handleSave} className="flex-1 py-3 rounded-xl bg-indigo-500 text-white font-semibold shadow-lg shadow-indigo-500/20 transition-transform active:scale-95">Create</button>
+                    <button onClick={onClose} className="flex-1 py-3 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold transition-colors">{t('cancel')}</button>
+                    <button onClick={handleSave} className="flex-1 py-3 rounded-xl bg-indigo-500 text-white font-semibold shadow-lg shadow-indigo-500/20 transition-transform active:scale-95">{t('create')}</button>
                 </div>
             </div>
         </div>

@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { useI18n } from '../../services/i18n';
 
 interface DrawingModalProps {
     isOpen: boolean;
@@ -7,6 +8,7 @@ interface DrawingModalProps {
 }
 
 export const DrawingModal: React.FC<DrawingModalProps> = ({ isOpen, onClose, onSave }) => {
+    const { t } = useI18n();
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isDrawing, setIsDrawing] = useState(false);
 
@@ -66,10 +68,10 @@ export const DrawingModal: React.FC<DrawingModalProps> = ({ isOpen, onClose, onS
         <div className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col h-[70vh]">
                 <div className="p-4 border-b flex justify-between items-center">
-                    <h3 className="font-bold text-slate-800">Sketch</h3>
+                    <h3 className="font-bold text-slate-800">{t('sketch')}</h3>
                     <div className="flex gap-2">
-                        <button onClick={onClose} className="text-slate-500 font-medium px-3">Cancel</button>
-                        <button onClick={handleSave} className="bg-indigo-500 text-white px-4 py-1.5 rounded-lg font-medium">Done</button>
+                        <button onClick={onClose} className="text-slate-500 font-medium px-3">{t('cancel')}</button>
+                        <button onClick={handleSave} className="bg-indigo-500 text-white px-4 py-1.5 rounded-lg font-medium">{t('done')}</button>
                     </div>
                 </div>
                 <div className="flex-1 bg-white relative touch-none">

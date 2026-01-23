@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Note, Category } from '../../types';
 import { CategoryModal } from '../../components/modals/CategoryModal';
+import { useI18n } from '../../services/i18n';
 
 interface CategoriesViewProps {
     categories: Category[];
@@ -10,14 +11,16 @@ interface CategoriesViewProps {
     onDeleteCategory: (id: string) => void;
 }
 
-const TIPS = [
-    { title: "Pro Tip", text: "Tap and hold any category to reorganize or edit colors.", icon: "auto_awesome" },
-    { title: "Smart Move", text: "Archive old notes to keep your dashboard clean and focused.", icon: "archive" },
-    { title: "Quick Lock", text: "Use the lock icon in the editor to protect sensitive data with a PIN.", icon: "lock" },
-    { title: "Search+", text: "Vitreon search also looks inside your tags and checklist items.", icon: "search" }
-];
+// Tips keys mapping
+const TIP_KEYS = [
+    { title: "proTip", text: "tip1Text", icon: "auto_awesome" },
+    { title: "smartMove", text: "tip2Text", icon: "archive" },
+    { title: "quickLock", text: "tip3Text", icon: "lock" },
+    { title: "searchPlus", text: "tip4Text", icon: "search" }
+] as const;
 
 const CategoryCard: React.FC<{ category: Category; count: number; onClick: () => void; onDelete: (e: React.MouseEvent) => void }> = ({ category, count, onClick, onDelete }) => {
+    const { t } = useI18n();
     const colorMap: Record<string, string> = {
         blue: 'from-blue-500/20 to-blue-600/5 text-blue-500 dark:text-blue-400 border-blue-500/20',
         emerald: 'from-emerald-500/20 to-emerald-600/5 text-emerald-500 dark:text-emerald-400 border-emerald-500/20',
@@ -40,20 +43,21 @@ const CategoryCard: React.FC<{ category: Category; count: number; onClick: () =>
                 <span className="material-symbols-rounded text-2xl">{category.icon}</span>
             </div>
             <div>
-                <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-1">{category.name}</h3>
-                <p className="text-sm font-semibold opacity-60">{count} Notes</p>
+                <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-1">{t(category.id as any) || category.name}</h3>
+                <p className="text-sm font-semibold opacity-60">{count} {t('notesCount')}</p>
             </div>
         </div>
     );
 };
 
 export const CategoriesView: React.FC<CategoriesViewProps> = ({ categories, notes, onCategoryClick, onAddCategory, onDeleteCategory }) => {
+    const { t } = useI18n();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [tipIndex, setTipIndex] = useState(0);
     
     useEffect(() => {
         const interval = setInterval(() => {
-            setTipIndex((prev) => (prev + 1) % TIPS.length);
+            setTipIndex((prev) => (prev + 1) % TIP_KEYS.length);
         }, 8000);
         return () => clearInterval(interval);
     }, []);
@@ -65,7 +69,7 @@ export const CategoriesView: React.FC<CategoriesViewProps> = ({ categories, note
 
     return (
         <div className="p-6 h-full overflow-y-auto no-scrollbar pb-32 animate-in fade-in duration-500">
-            <div className="grid grid-cols-2 gap-5 mb-8  stagger-1">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-5 mb-8  stagger-1">
                 {categories.map((cat, idx) => (
                     <div key={cat.id} className={`animate-fade-in`} style={{ animationDelay: `${(idx + 1) * 100}ms` }}>
                         <CategoryCard 
@@ -85,21 +89,21 @@ export const CategoriesView: React.FC<CategoriesViewProps> = ({ categories, note
                     <div className="w-14 h-14 rounded-full bg-indigo-500/20 text-indigo-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <span className="material-symbols-rounded text-3xl">add</span>
                     </div>
-                    <span className="mt-4 text-sm font-bold text-slate-500 dark:text-white uppercase tracking-widest opacity-80">New Category</span>
+                    <span className="mt-4 text-sm font-bold text-slate-500 dark:text-white uppercase tracking-widest opacity-80">{t('newCategory')}</span>
                 </div>
             </div>
 
             {/* Pro Tip Banner */}
             <div 
-                onClick={() => setTipIndex((tipIndex + 1) % TIPS.length)}
+                onClick={() => setTipIndex((tipIndex + 1) % TIP_KEYS.length)}
                 className="glass-card rounded-[32px] p-6 flex items-center gap-5 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border-indigo-500/20 cursor-pointer hover:scale-[1.02] active:scale-95 transition-all  stagger-2"
             >
                 <div className="w-14 h-14 rounded-2xl bg-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/30 shrink-0">
-                    <span className="material-symbols-rounded text-white text-2xl animate-spin-slow" style={{ animationDuration: '4s' }}>{TIPS[tipIndex].icon}</span>
+                    <span className="material-symbols-rounded text-white text-2xl animate-spin-slow" style={{ animationDuration: '4s' }}>{TIP_KEYS[tipIndex].icon}</span>
                 </div>
                 <div className="flex-1">
-                    <h4 className="font-bold text-slate-800 dark:text-white mb-0.5">{TIPS[tipIndex].title}</h4>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-tight">{TIPS[tipIndex].text}</p>
+                    <h4 className="font-bold text-slate-800 dark:text-white mb-0.5">{t(TIP_KEYS[tipIndex].title as any)}</h4>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-tight">{t(TIP_KEYS[tipIndex].text as any)}</p>
                 </div>
             </div>
 

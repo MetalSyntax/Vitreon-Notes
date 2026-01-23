@@ -11,17 +11,22 @@ interface ProfileViewProps {
     onToggleBiometrics: () => void;
     profileImage: string | null;
     onUpdateProfileImage: (img: string) => void;
+    userName: string;
+    userEmail: string;
+    userBio: string;
+    onUpdateProfile: (name: string, email: string, bio: string) => void;
 }
 
 export const ProfileView: React.FC<ProfileViewProps> = ({ 
     notesCount, categoriesCount, onBack, masterPin, isBiometricsEnabled, onSetMasterPin, onToggleBiometrics,
-    profileImage, onUpdateProfileImage
+    profileImage, onUpdateProfileImage, userName: initialUserName, userEmail: initialUserEmail, userBio: initialUserBio,
+    onUpdateProfile
 }) => {
     const { t } = useI18n();
     const [activeSection, setActiveSection] = useState<'main' | 'edit' | 'security'>('main');
-    const [userName, setUserName] = useState('Vitreon User');
-    const [userEmail, setUserEmail] = useState('vitreon.notes@example.com');
-    const [userBio, setUserBio] = useState('Digital minimalist and note-taking enthusiast.');
+    const [userName, setUserName] = useState(initialUserName);
+    const [userEmail, setUserEmail] = useState(initialUserEmail);
+    const [userBio, setUserBio] = useState(initialUserBio);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -77,7 +82,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                                     type="text" 
                                     className="w-full bg-white/50 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-[24px] pl-14 pr-6 py-4 outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-slate-700 dark:text-white font-bold" 
                                     value={userName} 
-                                    placeholder="Enter your name"
+                                    placeholder={t('namePlaceholder')}
                                     onChange={(e) => setUserName(e.target.value)}
                                 />
                             </div>
@@ -91,7 +96,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                                     type="email" 
                                     className="w-full bg-white/50 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-[24px] pl-14 pr-6 py-4 outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-slate-700 dark:text-white font-bold" 
                                     value={userEmail} 
-                                    placeholder="your@email.com"
+                                    placeholder={t('emailPlaceholder')}
                                     onChange={(e) => setUserEmail(e.target.value)}
                                 />
                             </div>
@@ -104,13 +109,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                                 <textarea 
                                     className="w-full bg-white/50 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-[24px] pl-14 pr-6 py-4 outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all text-slate-700 dark:text-white font-medium resize-none h-32" 
                                     value={userBio} 
-                                    placeholder="Tell us about yourself..."
+                                    placeholder={t('bioPlaceholder')}
                                     onChange={(e) => setUserBio(e.target.value)}
                                 />
                             </div>
                         </div>
 
-                        <button onClick={() => setActiveSection('main')} className="w-full bg-gradient-to-tr from-indigo-500 to-indigo-600 text-white font-black py-5 rounded-[24px] shadow-xl shadow-indigo-500/20 active:scale-95 transition-all text-sm uppercase tracking-widest mt-4  stagger-4">
+                        <button onClick={() => { onUpdateProfile(userName, userEmail, userBio); setActiveSection('main'); }} className="w-full bg-gradient-to-tr from-indigo-500 to-indigo-600 text-white font-black py-5 rounded-[24px] shadow-xl shadow-indigo-500/20 active:scale-95 transition-all text-sm uppercase tracking-widest mt-4  stagger-4">
                             {t('updateProfile')}
                         </button>
                     </div>
@@ -138,7 +143,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         </h4>
                         <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">{t('pinDesc')}</p>
                         <button onClick={onSetMasterPin} className="w-full py-4 rounded-2xl bg-black/5 dark:bg-white/5 text-xs font-black text-indigo-500 uppercase tracking-widest hover:bg-indigo-500 hover:text-white transition-all">
-                            {masterPin ? t('changePin') : 'Set Master PIN'}
+                            {masterPin ? t('changePin') : t('setMasterPin')}
                         </button>
                     </div>
                     
@@ -188,9 +193,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                             <span className="material-symbols-rounded text-[20px] font-bold">edit</span>
                         </button>
                     </div>
-                    <h1 className="text-2xl font-black text-slate-800 dark:text-white mb-1 tracking-tight">{userName}</h1>
-                    <p className="text-indigo-500 dark:text-indigo-400 font-bold text-sm">{userEmail}</p>
-                    <p className="text-slate-400 dark:text-slate-500 text-xs mt-3 max-w-[200px] text-center font-medium leading-relaxed">{userBio}</p>
+                    <h1 className="text-2xl font-black text-slate-800 dark:text-white mb-1 tracking-tight">{initialUserName}</h1>
+                    <p className="text-indigo-500 dark:text-indigo-400 font-bold text-sm">{initialUserEmail}</p>
+                    <p className="text-slate-400 dark:text-slate-500 text-xs mt-3 max-w-[200px] text-center font-medium leading-relaxed">{initialUserBio}</p>
                 </div>
 
                 <div className="space-y-6">
