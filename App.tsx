@@ -35,7 +35,10 @@ export default function App() {
     const [showFavorites, setShowFavorites] = useState(false);
     const [showArchived, setShowArchived] = useState(false);
     const [confirmModal, setConfirmModal] = useState<{ open: boolean, noteId?: string }>({ open: false });
-    const [pinModal, setPinModal] = useState<{ open: boolean, mode: 'unlock'|'set', noteId?: string }>({ open: false, mode: 'unlock' });
+    const [pinModal, setPinModal] = useState<{ open: boolean, mode: 'unlock'|'set'|'set-master', noteId?: string }>({ open: false, mode: 'unlock' });
+    const [masterPin, setMasterPin] = useState<string | null>(localStorage.getItem('vitreon_master_pin'));
+    const [isBiometricsEnabled, setIsBiometricsEnabled] = useState<boolean>(localStorage.getItem('vitreon_biometrics') === 'true');
+    const [profileImage, setProfileImage] = useState<string | null>(localStorage.getItem('vitreon_profile_image'));
 
     // Initial Load
     useEffect(() => {
@@ -127,6 +130,11 @@ export default function App() {
             await handleSaveNote(updated);
             setPinModal({ ...pinModal, open: false });
             showToast("Note locked.");
+        } else if (pinModal.mode === 'set-master') {
+            setMasterPin(pin);
+            localStorage.setItem('vitreon_master_pin', pin);
+            setPinModal({ ...pinModal, open: false });
+            showToast("Master PIN updated.");
         } else if (pinModal.mode === 'unlock') {
             const noteToUnlock = notes.find(n => n.id === pinModal.noteId);
             if (noteToUnlock && noteToUnlock.lockPin === pin) {
@@ -137,6 +145,13 @@ export default function App() {
                 alert("Incorrect PIN");
             }
         }
+    };
+
+    const handleToggleBiometrics = () => {
+        const newValue = !isBiometricsEnabled;
+        setIsBiometricsEnabled(newValue);
+        localStorage.setItem('vitreon_biometrics', String(newValue));
+        showToast(newValue ? "Biometrics enabled." : "Biometrics disabled.");
     };
 
     const handleNoteClick = (note: Note) => {
@@ -181,15 +196,23 @@ export default function App() {
         const notesToExport = notes.filter(n => !n.isArchived);
         if (notesToExport.length === 0) return showToast("No notes to export.");
         
-        notesToExport.forEach(note => {
-            const blob = new Blob([note.content], { type: 'text/markdown' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${note.title || 'Untitled'}.md`;
-            a.click();
+        // Since we can't install JSZip due to system restrictions, 
+        // we'll trigger the export of all files. 
+        // Browsers might ask for permission to download multiple files.
+        notesToExport.forEach((note, index) => {
+            setTimeout(() => {
+                const blob = new Blob([`# ${note.title}\n\n${note.content}`], { type: 'text/markdown' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${note.title || 'Untitled'}.md`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, index * 100); // Staggered to prevent browser blocking
         });
-        showToast(`Exported ${notesToExport.length} files.`);
+        showToast(`Exporting ${notesToExport.length} files...`);
     };
 
     const handleAddCategory = (cat: Category) => {
@@ -201,6 +224,12 @@ export default function App() {
         if (id === DEFAULT_CATEGORY) return alert("Default category cannot be deleted.");
         setCategories(categories.filter(c => c.id !== id));
         showToast("Category removed.");
+    };
+
+    const handleUpdateProfileImage = (img: string) => {
+        setProfileImage(img);
+        localStorage.setItem('vitreon_profile_image', img);
+        showToast("Profile image updated.");
     };
 
     if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-slate-900"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div></div>;
@@ -220,7 +249,11 @@ export default function App() {
                             onClick={() => setView('profile')}
                             className="w-11 h-11 rounded-2xl glass-card flex items-center justify-center cursor-pointer overflow-hidden group hover:border-indigo-500/50 transition-all"
                         >
-                             <span className="material-symbols-rounded text-slate-600 dark:text-slate-300 group-hover:text-indigo-400">account_circle</span>
+                             {profileImage ? (
+                                 <img src={profileImage} alt="Profile" className="w-[120%] h-[120%] object-cover" />
+                             ) : (
+                                 <span className="material-symbols-rounded text-slate-600 dark:text-slate-300 group-hover:text-indigo-400">account_circle</span>
+                             )}
                         </div>
                         <h1 className="text-xl font-bold tracking-tight text-slate-800 dark:text-white animate-in slide-in-from-top-4">
                             {view === 'home' ? (showFavorites ? t('favorites') : showArchived ? t('archived') : t('allNotes')) : t(view as any)}
@@ -259,6 +292,12 @@ export default function App() {
                             notesCount={notes.length} 
                             categoriesCount={categories.length} 
                             onBack={() => setView('home')} 
+                            masterPin={masterPin}
+                            isBiometricsEnabled={isBiometricsEnabled}
+                            onSetMasterPin={() => setPinModal({ open: true, mode: 'set-master' })}
+                            onToggleBiometrics={handleToggleBiometrics}
+                            profileImage={profileImage}
+                            onUpdateProfileImage={handleUpdateProfileImage}
                         />
                     )}
                     {view === 'editor' && currentNote && (
@@ -296,7 +335,7 @@ export default function App() {
                 )}
             </div>
 
-            <PinModal isOpen={pinModal.open} onClose={() => setPinModal({...pinModal, open: false})} isSettingPin={pinModal.mode === 'set'} onUnlock={handlePinResult} />
+            <PinModal isOpen={pinModal.open} onClose={() => setPinModal({...pinModal, open: false})} isSettingPin={pinModal.mode === 'set' || pinModal.mode === 'set-master'} onUnlock={handlePinResult} />
             <ConfirmModal 
                 isOpen={confirmModal.open} 
                 title={t('deleteNote')} 

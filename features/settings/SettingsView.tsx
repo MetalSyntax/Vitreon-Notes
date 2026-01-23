@@ -17,18 +17,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     const { t, lang, setLang } = useI18n();
 
     const languages = [
-        { code: 'en', name: 'English', icon: '🇺🇸' },
-        { code: 'es', name: 'Español', icon: '🇪🇸' },
-        { code: 'pt', name: 'Português', icon: '🇧🇷' }
+        { code: 'en', name: 'English' },
+        { code: 'es', name: 'Español' },
+        { code: 'pt', name: 'Português' }
     ] as const;
 
     return (
         <div className="p-6 h-full overflow-y-auto no-scrollbar pb-32 animate-in fade-in duration-500">
-            <h2 className="text-3xl font-black mb-8 text-slate-800 dark:text-white tracking-tight animate-slide-up stagger-1">{t('settings')}</h2>
+            <h2 className="text-3xl font-black mb-8 text-slate-800 dark:text-white tracking-tight  stagger-1">{t('settings')}</h2>
             
             <div className="grid grid-cols-1 gap-8 max-w-2xl">
                 {/* Appearance Section */}
-                <div className="glass-panel p-8 rounded-[40px] animate-slide-up stagger-1">
+                <div className="glass-panel p-8 rounded-[40px]  stagger-1">
                     <div className="flex items-center gap-4 mb-6">
                         <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
                             <span className="material-symbols-rounded text-2xl">palette</span>
@@ -53,7 +53,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 </div>
 
                 {/* Language Section */}
-                <div className="glass-panel p-8 rounded-[40px] animate-slide-up stagger-2">
+                <div className="glass-panel p-8 rounded-[40px]  stagger-2">
                     <div className="flex items-center gap-4 mb-6">
                         <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
                             <span className="material-symbols-rounded text-2xl">language</span>
@@ -68,7 +68,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                                 onClick={() => setLang(l.code as any)}
                                 className={`flex items-center justify-center gap-3 py-4 rounded-2xl font-black text-sm transition-all border-2 ${lang === l.code ? 'bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/20' : 'bg-black/5 dark:bg-white/5 border-transparent text-slate-500 hover:border-emerald-500/30'}`}
                             >
-                                <span className="text-lg">{l.icon}</span>
                                 {l.name}
                             </button>
                         ))}
@@ -76,7 +75,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 </div>
 
                 {/* Data Management Section */}
-                <div className="glass-panel p-8 rounded-[40px] animate-slide-up stagger-3">
+                <div className="glass-panel p-8 rounded-[40px]  stagger-3">
                     <div className="flex items-center gap-4 mb-6">
                         <div className="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-500 flex items-center justify-center">
                             <span className="material-symbols-rounded text-2xl">database</span>
@@ -131,7 +130,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 </div>
             </div>
 
-            <div className="max-w-2xl text-center opacity-30 mt-12 animate-slide-up stagger-4">
+            <div className="max-w-2xl text-center opacity-30 mt-12  stagger-4">
                 <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.4em]">Vitreon Notes Elite v2.2</p>
                 <p className="text-[9px] font-bold text-slate-400 dark:text-slate-600 mt-2 uppercase">Handcrafted for Performance & Privacy</p>
             </div>

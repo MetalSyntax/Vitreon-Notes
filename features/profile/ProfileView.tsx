@@ -5,21 +5,34 @@ interface ProfileViewProps {
     notesCount: number;
     categoriesCount: number;
     onBack: () => void;
+    masterPin: string | null;
+    isBiometricsEnabled: boolean;
+    onSetMasterPin: () => void;
+    onToggleBiometrics: () => void;
+    profileImage: string | null;
+    onUpdateProfileImage: (img: string) => void;
 }
 
 export const ProfileView: React.FC<ProfileViewProps> = ({ 
-    notesCount, categoriesCount, onBack, onExportMD, onImportMD 
+    notesCount, categoriesCount, onBack, masterPin, isBiometricsEnabled, onSetMasterPin, onToggleBiometrics,
+    profileImage, onUpdateProfileImage
 }) => {
-    const { t, lang, setLang } = useI18n();
+    const { t } = useI18n();
     const [activeSection, setActiveSection] = useState<'main' | 'edit' | 'security'>('main');
     const [userName, setUserName] = useState('Vitreon User');
     const [userEmail, setUserEmail] = useState('vitreon.notes@example.com');
     const [userBio, setUserBio] = useState('Digital minimalist and note-taking enthusiast.');
 
-    const languageNames: Record<Language, string> = {
-        en: 'English',
-        es: 'Español',
-        pt: 'Português'
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            if (event.target?.result) {
+                onUpdateProfileImage(event.target.result as string);
+            }
+        };
+        reader.readAsDataURL(file);
     };
 
     if (activeSection === 'edit') {
@@ -38,17 +51,25 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         <div className="relative group">
                             <div className="w-28 h-28 rounded-[36px] bg-gradient-to-tr from-indigo-500 to-purple-600 p-1 shadow-xl shadow-indigo-500/20">
                                 <div className="w-full h-full rounded-[34px] bg-white dark:bg-[#030712] flex items-center justify-center overflow-hidden">
-                                     <span className="material-symbols-rounded text-5xl text-slate-300 dark:text-slate-700">account_circle</span>
+                                     {profileImage ? (
+                                         <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                                     ) : (
+                                         <span className="material-symbols-rounded text-5xl text-slate-300 dark:text-slate-700">account_circle</span>
+                                     )}
                                 </div>
                             </div>
-                            <button className="absolute -bottom-2 -right-2 w-10 h-10 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg border-4 border-white dark:border-[#030712] hover:scale-110 transition-transform">
+                            <button 
+                                onClick={() => document.getElementById('profile-upload-edit')?.click()}
+                                className="absolute -bottom-2 -right-2 w-10 h-10 rounded-2xl bg-indigo-500 text-white flex items-center justify-center shadow-lg border-4 border-white dark:border-[#030712] hover:scale-110 transition-transform"
+                            >
                                 <span className="material-symbols-rounded text-lg font-bold">photo_camera</span>
                             </button>
+                            <input type="file" id="profile-upload-edit" className="hidden" accept="image/*" onChange={handleImageChange} />
                         </div>
                     </div>
 
                     <div className="space-y-6">
-                        <div className="group animate-slide-up stagger-1">
+                        <div className="group  stagger-1">
                             <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1 group-focus-within:text-indigo-500 transition-colors">{t('fullName')}</label>
                             <div className="relative">
                                 <span className="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-rounded text-slate-400 text-xl group-focus-within:text-indigo-500 transition-colors">person</span>
@@ -62,7 +83,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                             </div>
                         </div>
 
-                        <div className="group animate-slide-up stagger-2">
+                        <div className="group  stagger-2">
                             <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1 group-focus-within:text-indigo-500 transition-colors">{t('email')}</label>
                             <div className="relative">
                                 <span className="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-rounded text-slate-400 text-xl group-focus-within:text-indigo-500 transition-colors">alternate_email</span>
@@ -76,7 +97,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                             </div>
                         </div>
 
-                        <div className="group animate-slide-up stagger-3">
+                        <div className="group  stagger-3">
                             <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1 group-focus-within:text-indigo-500 transition-colors">{t('bio')}</label>
                             <div className="relative">
                                 <span className="absolute left-5 top-6 material-symbols-rounded text-slate-400 text-xl group-focus-within:text-indigo-500 transition-colors">edit_note</span>
@@ -89,7 +110,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                             </div>
                         </div>
 
-                        <button onClick={() => setActiveSection('main')} className="w-full bg-gradient-to-tr from-indigo-500 to-indigo-600 text-white font-black py-5 rounded-[24px] shadow-xl shadow-indigo-500/20 active:scale-95 transition-all text-sm uppercase tracking-widest mt-4 animate-slide-up stagger-4">
+                        <button onClick={() => setActiveSection('main')} className="w-full bg-gradient-to-tr from-indigo-500 to-indigo-600 text-white font-black py-5 rounded-[24px] shadow-xl shadow-indigo-500/20 active:scale-95 transition-all text-sm uppercase tracking-widest mt-4  stagger-4">
                             {t('updateProfile')}
                         </button>
                     </div>
@@ -110,23 +131,28 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 </div>
 
                 <div className="space-y-4">
-                    <div className="glass-panel rounded-[32px] p-6 hover:border-indigo-500/30 transition-all group animate-slide-up stagger-1">
+                    <div className="glass-panel rounded-[32px] p-6 hover:border-indigo-500/30 transition-all group  stagger-1">
                         <h4 className="font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">
                             <span className="material-symbols-rounded text-indigo-500">password</span>
                             {t('masterPin')}
                         </h4>
                         <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">{t('pinDesc')}</p>
-                        <button className="w-full py-3 rounded-2xl bg-black/5 dark:bg-white/5 text-xs font-black text-indigo-500 uppercase tracking-widest hover:bg-indigo-500 hover:text-white transition-all">{t('changePin')}</button>
+                        <button onClick={onSetMasterPin} className="w-full py-4 rounded-2xl bg-black/5 dark:bg-white/5 text-xs font-black text-indigo-500 uppercase tracking-widest hover:bg-indigo-500 hover:text-white transition-all">
+                            {masterPin ? t('changePin') : 'Set Master PIN'}
+                        </button>
                     </div>
                     
-                    <div className="glass-panel rounded-[32px] p-6 hover:border-indigo-500/30 transition-all group animate-slide-up stagger-2">
+                    <div className="glass-panel rounded-[32px] p-6 hover:border-indigo-500/30 transition-all group  stagger-2">
                         <div className="flex items-center justify-between">
                             <h4 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
                                 <span className="material-symbols-rounded text-green-500">fingerprint</span>
                                 {t('biometricLock')}
                             </h4>
-                            <div className="w-12 h-6 bg-slate-200 dark:bg-indigo-500/20 rounded-full relative p-1 cursor-pointer">
-                                <div className="absolute top-1 left-1 w-4 h-4 bg-white dark:bg-indigo-400 rounded-full shadow-md transition-all"></div>
+                            <div 
+                                onClick={onToggleBiometrics}
+                                className={`w-12 h-7 rounded-full relative p-1 cursor-pointer transition-colors duration-300 ${isBiometricsEnabled ? 'bg-indigo-500' : 'bg-slate-200 dark:bg-white/10'}`}
+                            >
+                                <div className={`w-5 h-5 bg-white rounded-full shadow-md transition-all duration-300 ${isBiometricsEnabled ? 'translate-x-5' : 'translate-x-0'}`}></div>
                             </div>
                         </div>
                         <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 font-medium">{t('biometricDesc')}</p>
@@ -140,28 +166,22 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         <div className="flex flex-col h-full overflow-y-auto no-scrollbar pb-32 animate-in fade-in slide-in-from-left-4 duration-300">
             <div className="p-6">
                 <div className="flex items-center justify-between mb-8">
-                    <button onClick={onBack} className="w-11 h-11 rounded-2xl glass-panel flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-indigo-500 transition-colors">
+                    <button onClick={onBack} className="w-11 h-11 rounded-2xl glass-panel flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-indigo-500 transition-all">
                         <span className="material-symbols-rounded">chevron_left</span>
                     </button>
                     <h2 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">{t('profile')}</h2>
-                    <div className="flex gap-2">
-                        {(['en', 'es', 'pt'] as Language[]).map(l => (
-                            <button 
-                                key={l}
-                                onClick={() => setLang(l)}
-                                className={`text-[10px] font-black w-8 h-8 rounded-lg flex items-center justify-center transition-all ${lang === l ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'glass-panel text-slate-400'}`}
-                            >
-                                {l.toUpperCase()}
-                            </button>
-                        ))}
-                    </div>
+                    <div className="w-11 h-11 opacity-0"></div>
                 </div>
 
                 <div className="flex flex-col items-center mb-10 animate-smooth-in">
                     <div className="relative mb-6">
                         <div className="w-32 h-32 rounded-[44px] bg-gradient-to-tr from-indigo-500 via-purple-500 to-rose-500 p-1 shadow-2xl shadow-indigo-500/20 animate-float">
                             <div className="w-full h-full rounded-[42px] bg-white dark:bg-[#030712] flex items-center justify-center overflow-hidden">
-                                <span className="material-symbols-rounded text-6xl text-slate-300 dark:text-slate-700">account_circle</span>
+                                {profileImage ? (
+                                    <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="material-symbols-rounded text-6xl text-slate-300 dark:text-slate-700">account_circle</span>
+                                )}
                             </div>
                         </div>
                         <button onClick={() => setActiveSection('edit')} className="absolute bottom-0 -right-2 w-11 h-11 rounded-2xl bg-white dark:bg-[#1e293b] text-indigo-500 flex items-center justify-center shadow-lg border border-indigo-500/10 hover:scale-110 active:scale-95 transition-all">
@@ -174,8 +194,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 </div>
 
                 <div className="space-y-6">
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-slate-600 px-2 pt-2 animate-slide-up stagger-1">{t('analytics')}</h3>
-                    <div className="grid grid-cols-2 gap-4 animate-slide-up stagger-1">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-slate-600 px-2 pt-2  stagger-1">{t('analytics')}</h3>
+                    <div className="grid grid-cols-2 gap-4  stagger-1">
                         <div className="glass-panel rounded-[32px] p-6">
                             <div className="text-2xl font-black text-slate-800 dark:text-white mb-1">{notesCount}</div>
                             <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t('savedNotes')}</div>
@@ -186,8 +206,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         </div>
                     </div>
 
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-slate-600 px-2 pt-2 animate-slide-up stagger-2">{t('accountSettings')}</h3>
-                    <div className="glass-panel rounded-[36px] overflow-hidden animate-slide-up stagger-2">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-slate-600 px-2 pt-2  stagger-2">{t('accountSettings')}</h3>
+                    <div className="glass-panel rounded-[36px] overflow-hidden  stagger-2">
                         <button onClick={() => setActiveSection('edit')} className="w-full flex items-center justify-between p-6 hover:bg-indigo-500/5 transition-all border-b border-black/5 dark:border-white/5 group">
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center group-hover:scale-110 transition-transform">

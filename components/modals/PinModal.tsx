@@ -35,10 +35,10 @@ export const PinModal: React.FC<PinModalProps> = ({ isOpen, onClose, onUnlock, i
         <div className="fixed inset-0 z-[80] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-6">
             <div className="bg-white dark:bg-slate-800 w-full max-w-xs rounded-3xl p-6 shadow-2xl border border-white/10">
                 <h3 className="text-center font-bold text-xl mb-2 text-slate-800 dark:text-white">
-                    {isSettingPin ? 'Set Access PIN' : 'Enter PIN'}
+                    {isSettingPin ? 'Secure Access' : 'Enter PIN'}
                 </h3>
                 <p className="text-center text-slate-500 dark:text-slate-400 text-sm mb-6">
-                    {isSettingPin ? 'Create a 4-digit code to lock this note.' : 'This note is locked.'}
+                    {isSettingPin ? 'Create a 4-digit code to protect your privacy.' : 'This resource is locked.'}
                 </p>
 
                 <div className="flex justify-center gap-4 mb-8">
@@ -63,7 +63,7 @@ export const PinModal: React.FC<PinModalProps> = ({ isOpen, onClose, onUnlock, i
                 </div>
                 
                 <button onClick={handleSubmit} className="w-full py-3 bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/25 active:scale-95 transition-transform">
-                    {isSettingPin ? 'Lock Note' : 'Unlock'}
+                    {isSettingPin ? 'Confirm' : 'Access'}
                 </button>
             </div>
         </div>

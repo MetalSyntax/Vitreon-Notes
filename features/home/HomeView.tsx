@@ -72,7 +72,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
     return (
         <div className="flex flex-col h-full overflow-y-auto no-scrollbar pb-32 pt-2 transition-colors animate-in fade-in duration-500">
-            <div className="px-6 mb-8 animate-slide-up stagger-1">
+            <div className="px-6 mb-8  stagger-1">
                 <div className="relative group">
                     <span className="absolute left-5 top-4 material-symbols-rounded text-slate-400 group-focus-within:text-indigo-500 transition-colors">search</span>
                     <input
@@ -90,7 +90,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
 
             {selectedCategory && (
-                <div className="px-6 mb-6 animate-slide-up stagger-1">
+                <div className="px-6 mb-6  stagger-1">
                     <div className={`glass-card rounded-2xl p-4 flex items-center justify-between border-l-4 border-${currentCat?.color || 'slate'}-500`}>
                         <div className="flex items-center gap-3">
                             <span className="material-symbols-rounded text-indigo-500">{currentCat?.icon || 'folder'}</span>
@@ -104,7 +104,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             )}
 
             {!showFavorites && !showArchived && pinned.length > 0 && (
-                <div className="mb-8 animate-slide-up stagger-2">
+                <div className="mb-8  stagger-2">
                     <div className="px-6 mb-4">
                         <h2 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">Pinned Notes</h2>
                     </div>
@@ -114,11 +114,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 </div>
             )}
 
-            <div className="px-6 mb-4 animate-slide-up stagger-3">
+            <div className="px-6 mb-4  stagger-3">
                 <h2 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">{showFavorites ? t('favorites') : showArchived ? t('archived') : t('allNotes')}</h2>
             </div>
             
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 px-6 pb-20 animate-slide-up stagger-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 px-6 pb-20  stagger-4">
                 {mainList.map(note => <NoteCard key={note.id} note={note} category={categories.find(c => c.id === note.category)} onClick={() => onNoteClick(note)} onPin={() => onPinNote(note)} layout="grid" />)}
                 {mainList.length === 0 && !pinned.length && (
                     <div className="col-span-full flex flex-col items-center justify-center py-20 opacity-30">

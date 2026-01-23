@@ -24,8 +24,8 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
     const [tagInput, setTagInput] = useState('');
     const [showMenu, setShowMenu] = useState(false);
     const [showCategoryMenu, setShowCategoryMenu] = useState(false);
-    // Default to View Mode as requested
-    const [isViewMode, setIsViewMode] = useState(true);
+    // Default to View Mode for existing notes, Edit Mode for new notes
+    const [isViewMode, setIsViewMode] = useState(initialNote.title !== '' || initialNote.content !== '');
     const [isDrawingOpen, setIsDrawingOpen] = useState(false);
     const [isVoiceOpen, setIsVoiceOpen] = useState(false);
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -212,7 +212,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
             )}
 
             {/* Content Area */}
-            <div className="flex-1 overflow-y-auto px-8 pb-32 no-scrollbar animate-slide-up stagger-1">
+            <div className="flex-1 overflow-y-auto px-8 pb-32 no-scrollbar  stagger-1">
                 {/* Category Selector */}
                 <div className="mb-4 relative">
                     <button 
@@ -250,7 +250,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
                     <h1 className="text-4xl font-bold text-slate-800 dark:text-white mb-6 tracking-tight leading-tight">{note.title || "Untitled Note"}</h1>
                 ) : (
                     <input
-                        className="w-full bg-transparent text-4xl font-bold placeholder-slate-300 dark:placeholder-slate-700 border-none focus:ring-0 outline-none p-0 mb-6 text-slate-800 dark:text-white tracking-tight animate-slide-up stagger-1"
+                        className="w-full bg-transparent text-4xl font-bold placeholder-slate-300 dark:placeholder-slate-700 border-none focus:ring-0 outline-none p-0 mb-6 text-slate-800 dark:text-white tracking-tight  stagger-1"
                         placeholder={t('title')}
                         value={note.title}
                         onChange={e => setNote({ ...note, title: e.target.value })}
@@ -260,7 +260,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
                 <div className="flex flex-col gap-6">
                     {/* Checklist */}
                     {note.isChecklist ? (
-                        <div className="space-y-4 animate-slide-up stagger-2">
+                        <div className="space-y-4  stagger-2">
                             {(note.content || "[ ] ").split('\n').map((line, idx) => {
                                 const isChecked = line.startsWith('[x] ');
                                 const text = line.replace(/^\[[ x]\] /, '');
@@ -313,11 +313,11 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
                         </div>
                     ) : (
                         isViewMode ? (
-                            <RichText content={note.content} className="text-xl leading-relaxed text-slate-700 dark:text-slate-300 min-h-[10vh] animate-slide-up stagger-2" />
+                            <RichText content={note.content} className="text-xl leading-relaxed text-slate-700 dark:text-slate-300 min-h-[10vh]  stagger-2" />
                         ) : (
                             <textarea
                                 ref={textareaRef}
-                                className="w-full min-h-[30vh] bg-transparent resize-none border-none focus:ring-0 outline-none p-0 text-xl leading-relaxed text-slate-700 dark:text-slate-300 placeholder-slate-300 dark:placeholder-slate-700 font-medium animate-slide-up stagger-2"
+                                className="w-full min-h-[30vh] bg-transparent resize-none border-none focus:ring-0 outline-none p-0 text-xl leading-relaxed text-slate-700 dark:text-slate-300 placeholder-slate-300 dark:placeholder-slate-700 font-medium  stagger-2"
                                 placeholder={t('content')}
                                 value={note.content}
                                 onChange={e => setNote({ ...note, content: e.target.value })}
@@ -328,7 +328,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
                     {/* Attachments Area */}
                     <div className="mt-8 space-y-6">
                         {note.images.length > 0 && (
-                            <div className={`grid gap-4 animate-slide-up stagger-3 ${isViewMode ? (note.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2') : 'grid-cols-1'}`}>
+                            <div className={`grid gap-4  stagger-3 ${isViewMode ? (note.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2') : 'grid-cols-1'}`}>
                                 {note.images.map((img, idx) => (
                                     <div 
                                         key={`img-${idx}`} 
@@ -363,7 +363,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
                         
                         {/* Voice Notes */}
                         {note.voiceNotes.length > 0 && (
-                            <div className="grid grid-cols-1 gap-4 animate-slide-up stagger-4">
+                            <div className="grid grid-cols-1 gap-4  stagger-4">
                                 {note.voiceNotes.map((vn, idx) => (
                                     <div key={`vn-${idx}`} className="flex items-center gap-4 p-5 rounded-[28px] glass-panel bg-indigo-500/5 dark:bg-indigo-500/10 border-indigo-500/20 group hover:shadow-lg transition-all">
                                         <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/30">
@@ -391,7 +391,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
 
                     {/* Tags */}
                     {(note.tags.length > 0 || !isViewMode) && (
-                        <div className="flex flex-wrap gap-3 mt-10 animate-slide-up stagger-4">
+                        <div className="flex flex-wrap gap-3 mt-10  stagger-4">
                             {note.tags.map(tag => (
                                 <div key={tag} className="flex items-center gap-2 px-4 py-2 rounded-full glass-panel bg-white dark:bg-white/5 border-black/5 dark:border-white/5 text-slate-600 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest group shadow-sm transition-all hover:border-indigo-500/30">
                                     <span className="material-symbols-rounded text-[14px] opacity-60 text-indigo-500">sell</span>
