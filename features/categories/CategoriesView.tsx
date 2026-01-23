@@ -64,20 +64,23 @@ export const CategoriesView: React.FC<CategoriesViewProps> = ({ categories, note
     }, {} as Record<string, number>);
 
     return (
-        <div className="p-6 h-full overflow-y-auto no-scrollbar pb-32">
-            <div className="grid grid-cols-2 gap-5 mb-8">
-                {categories.map(cat => (
-                    <CategoryCard 
-                        key={cat.id} category={cat} count={counts[cat.id] || 0} 
-                        onClick={() => onCategoryClick(cat)} 
-                        onDelete={(e) => { e.stopPropagation(); onDeleteCategory(cat.id); }}
-                    />
+        <div className="p-6 h-full overflow-y-auto no-scrollbar pb-32 animate-in fade-in duration-500">
+            <div className="grid grid-cols-2 gap-5 mb-8 animate-slide-up stagger-1">
+                {categories.map((cat, idx) => (
+                    <div key={cat.id} className={`animate-slide-up`} style={{ animationDelay: `${(idx + 1) * 100}ms` }}>
+                        <CategoryCard 
+                            category={cat} count={counts[cat.id] || 0} 
+                            onClick={() => onCategoryClick(cat)} 
+                            onDelete={(e) => { e.stopPropagation(); onDeleteCategory(cat.id); }}
+                        />
+                    </div>
                 ))}
                 
                 {/* New Category Card */}
                 <div 
                     onClick={() => setIsModalOpen(true)}
-                    className="glass-card rounded-[32px] p-6 flex flex-col items-center justify-center aspect-square cursor-pointer border-dashed border-2 border-slate-300 dark:border-white/20 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 transition-all group"
+                    className="glass-card rounded-[32px] p-6 flex flex-col items-center justify-center aspect-square cursor-pointer border-dashed border-2 border-slate-300 dark:border-white/20 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 transition-all group animate-slide-up"
+                    style={{ animationDelay: `${(categories.length + 1) * 100}ms` }}
                 >
                     <div className="w-14 h-14 rounded-full bg-indigo-500/20 text-indigo-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <span className="material-symbols-rounded text-3xl">add</span>
@@ -89,7 +92,7 @@ export const CategoriesView: React.FC<CategoriesViewProps> = ({ categories, note
             {/* Pro Tip Banner */}
             <div 
                 onClick={() => setTipIndex((tipIndex + 1) % TIPS.length)}
-                className="glass-card rounded-[32px] p-6 flex items-center gap-5 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border-indigo-500/20 cursor-pointer hover:scale-[1.02] active:scale-95 transition-all"
+                className="glass-card rounded-[32px] p-6 flex items-center gap-5 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border-indigo-500/20 cursor-pointer hover:scale-[1.02] active:scale-95 transition-all animate-slide-up stagger-2"
             >
                 <div className="w-14 h-14 rounded-2xl bg-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/30 shrink-0">
                     <span className="material-symbols-rounded text-white text-2xl animate-spin-slow" style={{ animationDuration: '4s' }}>{TIPS[tipIndex].icon}</span>

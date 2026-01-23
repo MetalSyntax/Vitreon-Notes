@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Note, Category } from '../../types';
 import { NoteCard } from '../../components/notes/NoteCard';
+import { useI18n } from '../../services/i18n';
 
 interface HomeViewProps {
     notes: Note[];
@@ -22,6 +23,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
     selectedCategory, onClearCategory,
     onPinNote
 }) => {
+    const { t, lang } = useI18n();
     const [searchQuery, setSearchQuery] = useState('');
     const [isListening, setIsListening] = useState(false);
 
@@ -58,7 +60,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         }
 
         const recognition = new SpeechRecognition();
-        recognition.lang = 'en-US';
+        recognition.lang = lang === 'es' ? 'es-ES' : lang === 'pt' ? 'pt-BR' : 'en-US';
         recognition.onstart = () => setIsListening(true);
         recognition.onend = () => setIsListening(false);
         recognition.onresult = (event: any) => {
@@ -69,12 +71,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
     };
 
     return (
-        <div className="flex flex-col h-full overflow-y-auto no-scrollbar pb-32 pt-2 transition-colors">
-            <div className="px-6 mb-8">
+        <div className="flex flex-col h-full overflow-y-auto no-scrollbar pb-32 pt-2 transition-colors animate-in fade-in duration-500">
+            <div className="px-6 mb-8 animate-slide-up stagger-1">
                 <div className="relative group">
                     <span className="absolute left-5 top-4 material-symbols-rounded text-slate-400 group-focus-within:text-indigo-500 transition-colors">search</span>
                     <input
-                        type="text" placeholder="Smart Search..."
+                        type="text" placeholder={t('search')}
                         value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-14 pr-12 py-4 rounded-3xl glass-card bg-white dark:bg-white/5 border-none focus:ring-2 focus:ring-indigo-500/30 text-slate-800 dark:text-white placeholder-slate-400 outline-none transition-all shadow-xl"
                     />
@@ -88,7 +90,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
 
             {selectedCategory && (
-                <div className="px-6 mb-6">
+                <div className="px-6 mb-6 animate-slide-up stagger-1">
                     <div className={`glass-card rounded-2xl p-4 flex items-center justify-between border-l-4 border-${currentCat?.color || 'slate'}-500`}>
                         <div className="flex items-center gap-3">
                             <span className="material-symbols-rounded text-indigo-500">{currentCat?.icon || 'folder'}</span>
@@ -102,7 +104,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             )}
 
             {!showFavorites && !showArchived && pinned.length > 0 && (
-                <div className="mb-8">
+                <div className="mb-8 animate-slide-up stagger-2">
                     <div className="px-6 mb-4">
                         <h2 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">Pinned Notes</h2>
                     </div>
@@ -112,17 +114,17 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 </div>
             )}
 
-            <div className="px-6 mb-4">
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">{showFavorites ? 'Fixed Favorites' : showArchived ? 'Archived Notes' : 'Recent Notes'}</h2>
+            <div className="px-6 mb-4 animate-slide-up stagger-3">
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">{showFavorites ? t('favorites') : showArchived ? t('archived') : t('allNotes')}</h2>
             </div>
             
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 px-6 pb-20">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 px-6 pb-20 animate-slide-up stagger-4">
                 {mainList.map(note => <NoteCard key={note.id} note={note} category={categories.find(c => c.id === note.category)} onClick={() => onNoteClick(note)} onPin={() => onPinNote(note)} layout="grid" />)}
                 {mainList.length === 0 && !pinned.length && (
                     <div className="col-span-full flex flex-col items-center justify-center py-20 opacity-30">
                         <span className="material-symbols-rounded text-6xl mb-4 text-slate-400">stylus_note</span>
                         <p className="text-slate-500 dark:text-slate-400 font-medium text-center">
-                            {showFavorites ? "No favorites yet" : showArchived ? "Archive is empty" : "No results found for your search."}
+                            {t('noNotes')}
                         </p>
                     </div>
                 )}

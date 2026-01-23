@@ -8,6 +8,7 @@ import { NoteEditor } from './features/editor/NoteEditor';
 import { CategoriesView } from './features/categories/CategoriesView';
 import { SettingsView } from './features/settings/SettingsView';
 import { ProfileView } from './features/profile/ProfileView';
+import { useI18n } from './services/i18n';
 
 // --- Constants ---
 const CATEGORIES: Category[] = [
@@ -22,6 +23,7 @@ const CATEGORIES: Category[] = [
 const DEFAULT_CATEGORY = 'uncategorized';
 
 export default function App() {
+    const { t } = useI18n();
     const [theme, setTheme] = useState<ThemeMode>('dark');
     const [view, setView] = useState<'home' | 'editor' | 'categories' | 'settings' | 'profile'>('home');
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -220,7 +222,9 @@ export default function App() {
                         >
                              <span className="material-symbols-rounded text-slate-600 dark:text-slate-300 group-hover:text-indigo-400">account_circle</span>
                         </div>
-                        <h1 className="text-xl font-bold tracking-tight text-slate-800 dark:text-white">{view === 'home' ? (showFavorites ? 'Favorites' : showArchived ? 'Archive' : 'My Notes') : view.charAt(0).toUpperCase() + view.slice(1)}</h1>
+                        <h1 className="text-xl font-bold tracking-tight text-slate-800 dark:text-white animate-in slide-in-from-top-4">
+                            {view === 'home' ? (showFavorites ? t('favorites') : showArchived ? t('archived') : t('allNotes')) : t(view as any)}
+                        </h1>
                         <button 
                             onClick={() => { setShowArchived(!showArchived); setShowFavorites(false); setView('home'); }}
                             className={`w-11 h-11 rounded-2xl glass-card flex items-center justify-center cursor-pointer transition-all ${showArchived ? 'bg-indigo-500 text-white border-indigo-500' : 'text-slate-600 dark:text-slate-300'}`}
@@ -241,14 +245,20 @@ export default function App() {
                         />
                     )}
                     {view === 'categories' && <CategoriesView categories={categories} notes={notes} onCategoryClick={(c) => { setSelectedCategory(c.id); setView('home'); setShowFavorites(false); setShowArchived(false); }} onAddCategory={handleAddCategory} onDeleteCategory={handleDeleteCategory} />}
-                    {view === 'settings' && <SettingsView theme={theme} setTheme={setTheme} onExport={() => { exportDataToJSON().then(json => { const blob = new Blob([json], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `vitreon_backup_${new Date().toISOString().slice(0, 10)}.json`; a.click(); showToast("Exported."); }); }} onImport={handleImport} />}
+                    {view === 'settings' && (
+                        <SettingsView 
+                            theme={theme} setTheme={setTheme} 
+                            onExport={() => { exportDataToJSON().then(json => { const blob = new Blob([json], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `vitreon_backup_${new Date().toISOString().slice(0, 10)}.json`; a.click(); showToast("Exported."); }); }} 
+                            onImport={handleImport} 
+                            onExportMD={handleExportMarkdown}
+                            onImportMD={() => document.getElementById('md-import')?.click()}
+                        />
+                    )}
                     {view === 'profile' && (
                         <ProfileView 
                             notesCount={notes.length} 
                             categoriesCount={categories.length} 
                             onBack={() => setView('home')} 
-                            onExportMD={handleExportMarkdown}
-                            onImportMD={() => document.getElementById('md-import')?.click()}
                         />
                     )}
                     {view === 'editor' && currentNote && (
@@ -262,7 +272,7 @@ export default function App() {
                 </div>
 
                 {(view !== 'editor' && view !== 'profile') && (
-                    <div className="h-20 absolute bottom-0 left-0 right-0 glass-blur rounded-t-[40px] flex items-center justify-around px-8 z-20 border-t border-white/5">
+                    <div className="h-20 absolute bottom-0 left-0 right-0 glass-blur rounded-t-[40px] flex items-center justify-around px-8 z-20 border-t border-white/5 animate-in slide-in-from-bottom-8">
                         <button onClick={() => {setView('home'); setShowFavorites(false); setShowArchived(false);}} className={`p-3 rounded-2xl transition-all ${view === 'home' && !showFavorites && !showArchived ? 'text-indigo-400' : 'text-slate-500 hover:text-slate-300'}`}>
                             <span className="material-symbols-rounded text-2xl" style={{ fontVariationSettings: view === 'home' && !showFavorites && !showArchived ? "'FILL' 1" : "'FILL' 0" }}>home</span>
                         </button>
@@ -271,7 +281,7 @@ export default function App() {
                         </button>
                         
                         <div className="relative -top-8">
-                             <button onClick={handleCreateNote} className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-indigo-500 via-indigo-600 to-purple-600 text-white shadow-2xl shadow-indigo-500/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all outline-none ring-4 ring-[#0f172a]">
+                             <button onClick={handleCreateNote} className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-indigo-500 via-indigo-600 to-purple-600 text-white shadow-2xl shadow-indigo-500/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all outline-none ring-4 ring-[#0f172a] animate-bounce-in">
                                 <span className="material-symbols-rounded text-3xl">add</span>
                              </button>
                         </div>
@@ -289,10 +299,12 @@ export default function App() {
             <PinModal isOpen={pinModal.open} onClose={() => setPinModal({...pinModal, open: false})} isSettingPin={pinModal.mode === 'set'} onUnlock={handlePinResult} />
             <ConfirmModal 
                 isOpen={confirmModal.open} 
-                title="Delete Note" 
+                title={t('deleteNote')} 
                 message="This action cannot be undone. Are you sure you want to permanently delete this note?" 
                 onConfirm={confirmDelete} 
-                onCancel={() => setConfirmModal({ open: false })} 
+                onCancel={() => setConfirmModal({ open: false })}
+                confirmText={t('save')}
+                cancelText={t('cancel')}
             />
             <input type="file" id="md-import" className="hidden" accept=".md,.json" onChange={handleImport} />
             {toastMsg && <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-[60] px-6 py-3 rounded-full glass-panel shadow-xl text-sm font-semibold text-slate-800 dark:text-white flex items-center gap-2 animate-in fade-in slide-in-from-top-2"><span className="material-symbols-rounded text-green-500 text-lg">check_circle</span>{toastMsg}</div>}
