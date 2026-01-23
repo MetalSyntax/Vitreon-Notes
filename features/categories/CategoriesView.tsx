@@ -79,7 +79,7 @@ export const CategoriesView: React.FC<CategoriesViewProps> = ({ categories, note
                 {/* New Category Card */}
                 <div 
                     onClick={() => setIsModalOpen(true)}
-                    className="glass-card rounded-[32px] p-6 flex flex-col items-center justify-center aspect-square cursor-pointer border-dashed border-2 border-slate-300 dark:border-white/20 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 transition-all group animate-slide-up"
+                    className="glass-card rounded-[32px] p-6 flex flex-col items-center justify-center aspect-square cursor-pointer border-dashed border-2 border-slate-300 dark:border-white/20 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 transition-all group animate-smooth-fade"
                     style={{ animationDelay: `${(categories.length + 1) * 100}ms` }}
                 >
                     <div className="w-14 h-14 rounded-full bg-indigo-500/20 text-indigo-500 flex items-center justify-center group-hover:scale-110 transition-transform">

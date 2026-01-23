@@ -34,7 +34,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         <div className="w-11 h-11 opacity-0"></div>
                     </div>
                     
-                    <div className="flex flex-col items-center mb-10 animate-bounce-in">
+                    <div className="flex flex-col items-center mb-10 animate-smooth-in">
                         <div className="relative group">
                             <div className="w-28 h-28 rounded-[36px] bg-gradient-to-tr from-indigo-500 to-purple-600 p-1 shadow-xl shadow-indigo-500/20">
                                 <div className="w-full h-full rounded-[34px] bg-white dark:bg-[#030712] flex items-center justify-center overflow-hidden">
@@ -157,7 +157,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                     </div>
                 </div>
 
-                <div className="flex flex-col items-center mb-10 animate-bounce-in">
+                <div className="flex flex-col items-center mb-10 animate-smooth-in">
                     <div className="relative mb-6">
                         <div className="w-32 h-32 rounded-[44px] bg-gradient-to-tr from-indigo-500 via-purple-500 to-rose-500 p-1 shadow-2xl shadow-indigo-500/20 animate-float">
                             <div className="w-full h-full rounded-[42px] bg-white dark:bg-[#030712] flex items-center justify-center overflow-hidden">

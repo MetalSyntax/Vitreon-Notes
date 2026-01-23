@@ -137,7 +137,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
                 {/* View/Edit Toggle */}
                 <div 
                     onClick={() => setIsViewMode(!isViewMode)}
-                    className="flex items-center gap-3 px-5 py-2.5 glass-panel rounded-full cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-all active:scale-95 group animate-bounce-in"
+                    className="flex items-center gap-3 px-5 py-2.5 glass-panel rounded-full cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-all active:scale-95 group animate-smooth-in"
                 >
                     <span className={`material-symbols-rounded text-lg transition-colors ${isViewMode ? 'text-indigo-500' : 'text-slate-400'}`}>
                         {isViewMode ? 'visibility' : 'edit'}
@@ -189,7 +189,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
 
             {/* Toolbar - Only visible in Edit Mode */}
             {!isViewMode && (
-                <div className="mx-6 mb-6 p-2 rounded-[24px] glass-panel flex items-center justify-between gap-4 overflow-x-auto no-scrollbar shadow-sm bg-white/40 dark:bg-white/5 shrink-0 animate-bounce-in">
+                <div className="mx-6 mb-6 p-2 rounded-[24px] glass-panel flex items-center justify-between gap-4 overflow-x-auto no-scrollbar shadow-sm bg-white/40 dark:bg-white/5 shrink-0 animate-smooth-in">
                     <div className="flex items-center gap-1 shrink-0">
                         <div className="flex items-center gap-1 border-r border-black/5 dark:border-white/10 pr-2">
                             <button onClick={() => applyFormatting('**')} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title="Bold"><span className="material-symbols-rounded">format_bold</span></button>

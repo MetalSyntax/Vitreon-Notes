@@ -281,7 +281,7 @@ export default function App() {
                         </button>
                         
                         <div className="relative -top-8">
-                             <button onClick={handleCreateNote} className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-indigo-500 via-indigo-600 to-purple-600 text-white shadow-2xl shadow-indigo-500/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all outline-none ring-4 ring-[#0f172a] animate-bounce-in">
+                             <button onClick={handleCreateNote} className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-indigo-500 via-indigo-600 to-purple-600 text-white shadow-2xl shadow-indigo-500/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all outline-none ring-4 ring-[#0f172a] animate-smooth-in">
                                 <span className="material-symbols-rounded text-3xl">add</span>
                              </button>
                         </div>
