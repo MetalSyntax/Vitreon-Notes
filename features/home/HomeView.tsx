@@ -100,7 +100,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     <input
                         type="text" placeholder={t('search')}
                         value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-14 pr-12 py-4 rounded-3xl glass-card bg-white dark:bg-white/5 border-none focus:ring-2 focus:ring-indigo-500/30 text-slate-800 dark:text-white placeholder-slate-400 outline-none transition-all shadow-xl"
+                        className="w-full pl-4 pr-4 py-4 rounded-3xl glass-card bg-white dark:bg-white/5 border-none focus:ring-2 focus:ring-indigo-500/30 text-slate-800 dark:text-white placeholder-slate-400 outline-none transition-all shadow-xl"
                     />
                     <button 
                         onClick={startVoiceSearch}

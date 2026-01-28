@@ -21,15 +21,7 @@ const TIP_KEYS = [
 
 const CategoryCard: React.FC<{ category: Category; count: number; onClick: () => void; onDelete: (e: React.MouseEvent) => void }> = ({ category, count, onClick, onDelete }) => {
     const { t } = useI18n();
-    const colorMap: Record<string, string> = {
-        blue: 'from-blue-500/20 to-blue-600/5 text-blue-500 dark:text-blue-400 border-blue-500/20',
-        emerald: 'from-emerald-500/20 to-emerald-600/5 text-emerald-500 dark:text-emerald-400 border-emerald-500/20',
-        amber: 'from-amber-500/20 to-amber-600/5 text-amber-500 dark:text-amber-400 border-amber-500/20',
-        purple: 'from-purple-500/20 to-purple-600/5 text-purple-500 dark:text-purple-400 border-purple-500/20',
-        rose: 'from-rose-500/20 to-rose-600/5 text-rose-500 dark:text-rose-400 border-rose-500/20',
-        slate: 'from-slate-500/20 to-slate-600/5 text-slate-500 dark:text-slate-400 border-slate-500/20',
-    };
-    const styles = colorMap[category.color] || colorMap['slate'];
+    const styles = `from-${category.color}-500/20 to-${category.color}-600/5 text-${category.color}-500 dark:text-${category.color}-400 border-${category.color}-500/20`;
 
     return (
         <div onClick={onClick} className={`glass-card rounded-[32px] p-6 flex flex-col justify-between aspect-square cursor-pointer bg-gradient-to-br ${styles} relative group`}>

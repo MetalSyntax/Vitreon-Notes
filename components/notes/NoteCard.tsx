@@ -47,10 +47,20 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, category, onClick, onP
             ) : (
                 <div className={`flex ${isList ? 'flex-row w-full' : 'flex-col h-full'}`}>
                     {/* Media Header */}
-                    {(isCarousel || isCard || (note.images.length > 0 && !isList)) && (
-                        <div className={`relative shrink-0 ${isCarousel ? 'h-36' : (isCard ? 'h-48' : (note.images.length > 0 ? 'h-32' : 'h-0'))}`}>
-                            {note.images.length > 0 ? (
+                    {(isCarousel || isCard || ((note.attachments?.length > 0 || note.images.length > 0 || note.drawings.length > 0) && !isList)) && (
+                        <div className={`relative shrink-0 ${(note.attachments?.length > 0 || note.images.length > 0 || note.drawings.length > 0) ? 'bg-white' : ''} ${isCarousel ? 'h-36' : (isCard ? 'h-48' : ((note.attachments?.length > 0 || note.images.length > 0 || note.drawings.length > 0) ? 'h-32' : 'h-0'))}`}>
+                            {note.attachments?.length > 0 ? (
+                                note.attachments[0].type === 'voice' ? (
+                                    <div className="w-full h-full bg-indigo-500/10 flex items-center justify-center">
+                                        <span className="material-symbols-rounded text-4xl text-indigo-500">mic</span>
+                                    </div>
+                                ) : (
+                                    <img src={note.attachments[0].data} alt="Attachment" className={`w-full h-full ${note.attachments[0].type === 'image' ? 'object-cover' : 'object-contain p-2'}`} />
+                                )
+                            ) : note.images.length > 0 ? (
                                 <img src={note.images[0]} alt="Note" className="w-full h-full object-cover" />
+                            ) : note.drawings.length > 0 ? (
+                                <img src={note.drawings[0]} alt="Drawing" className="w-full h-full object-contain p-2" />
                             ) : (
                                 <div className={`w-full h-full bg-gradient-to-br from-${category?.color || 'indigo'}-500/20 to-transparent flex items-center justify-center`}>
                                      <span className="material-symbols-rounded text-4xl opacity-20">{category?.icon || 'note'}</span>
@@ -59,9 +69,19 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, category, onClick, onP
                         </div>
                     )}
 
-                    {isList && note.images.length > 0 && (
-                        <div className="w-24 h-full shrink-0">
-                             <img src={note.images[0]} alt="Note" className="w-full h-full object-cover" />
+                    {isList && (note.attachments?.length > 0 || note.images.length > 0 || note.drawings.length > 0) && (
+                        <div className={`w-24 h-full shrink-0 ${(note.attachments?.some(a => a.type === 'drawing') || (note.drawings.length > 0 && note.images.length === 0)) ? 'bg-white' : ''}`}>
+                             {note.attachments?.length > 0 ? (
+                                 note.attachments[0].type === 'voice' ? (
+                                     <div className="w-full h-full bg-indigo-500/10 flex items-center justify-center">
+                                         <span className="material-symbols-rounded text-2xl text-indigo-500">mic</span>
+                                     </div>
+                                 ) : (
+                                     <img src={note.attachments[0].data} alt="Note" className={`w-full h-full ${note.attachments[0].type === 'image' ? 'object-cover' : 'object-contain p-2'}`} />
+                                 )
+                             ) : (
+                                 <img src={note.images[0] || note.drawings[0]} alt="Note" className={`w-full h-full ${note.images.length > 0 ? 'object-cover' : 'object-contain p-2'}`} />
+                             )}
                         </div>
                     )}
 
@@ -75,11 +95,11 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, category, onClick, onP
                                     </span>
                                 )}
                             </div>
-                            <div className={`text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium ${isList ? 'line-clamp-1' : 'line-clamp-3'}`}>
+                            <div className={`text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-small ${isList ? 'line-clamp-1' : 'line-clamp-6'}`}>
                                 {note.isChecklist ? (
                                     <p className="opacity-60 flex items-center gap-2"><span className="material-symbols-rounded text-sm">checklist</span> {t('tasksCount')}</p>
                                 ) : (
-                                    <RichText content={note.content || t('noContent')} className={isList ? "line-clamp-1" : "line-clamp-3"} />
+                                    <RichText content={note.content || t('noContent')} className={isList ? "line-clamp-1" : "line-clamp-6"} />
                                 )}
                             </div>
                         </div>
@@ -93,9 +113,9 @@ export const NoteCard: React.FC<NoteCardProps> = ({ note, category, onClick, onP
                                      <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500">{t(category?.id as any) || category?.name || t('general')}</span>
                                 </div>
                                 <div className="flex gap-2">
-                                    {note.images.length > 1 && <span className="material-symbols-rounded text-sm text-slate-400 dark:text-slate-600">image</span>}
-                                    {note.voiceNotes.length > 0 && <span className="material-symbols-rounded text-sm text-slate-400 dark:text-slate-600">mic</span>}
-                                    {note.drawings.length > 0 && <span className="material-symbols-rounded text-sm text-slate-400 dark:text-slate-600">draw</span>}
+                                    {(note.attachments?.some(a => a.type === 'image') || note.images.length > 0) && <span className="material-symbols-rounded text-sm text-slate-400 dark:text-slate-600">image</span>}
+                                    {(note.attachments?.some(a => a.type === 'voice') || note.voiceNotes.length > 0) && <span className="material-symbols-rounded text-sm text-slate-400 dark:text-slate-600">mic</span>}
+                                    {(note.attachments?.some(a => a.type === 'drawing') || note.drawings.length > 0) && <span className="material-symbols-rounded text-sm text-slate-400 dark:text-slate-600">draw</span>}
                                 </div>
                             </div>
                         )}

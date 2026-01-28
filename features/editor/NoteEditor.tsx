@@ -20,7 +20,13 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
     initialNote, categories, onSave, onDelete, onArchive, onPin, onLock, onBack 
 }) => {
     const { t } = useI18n();
-    const [note, setNote] = useState<Note>(initialNote);
+    const [note, setNote] = useState<Note>({
+        ...initialNote,
+        attachments: initialNote.attachments || [],
+        images: initialNote.images || [],
+        drawings: initialNote.drawings || [],
+        voiceNotes: initialNote.voiceNotes || []
+    });
     const [tagInput, setTagInput] = useState('');
     const [showMenu, setShowMenu] = useState(false);
     const [showCategoryMenu, setShowCategoryMenu] = useState(false);
@@ -30,10 +36,50 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
     const [isVoiceOpen, setIsVoiceOpen] = useState(false);
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
     const [dropIndex, setDropIndex] = useState<number | null>(null);
+    const [playingIndex, setPlayingIndex] = useState<number | null>(null);
     
     const fileInputRef = useRef<HTMLInputElement>(null);
     const cameraInputRef = useRef<HTMLInputElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+
+    useEffect(() => {
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+            }
+        };
+    }, []);
+
+    // Initial Migration for legacy notes
+    useEffect(() => {
+        if ((note.attachments?.length || 0) === 0 && (note.images?.length > 0 || note.drawings?.length > 0 || note.voiceNotes?.length > 0)) {
+            const migratedAttachments: any[] = [
+                ...note.images.map(img => ({ id: crypto.randomUUID(), type: 'image', data: img })),
+                ...note.drawings.map(draw => ({ id: crypto.randomUUID(), type: 'drawing', data: draw })),
+                ...note.voiceNotes.map(vn => ({ id: crypto.randomUUID(), type: 'voice', data: vn }))
+            ];
+            setNote(prev => ({ ...prev, attachments: migratedAttachments }));
+        }
+    }, []);
+
+    const playVoiceNote = (vn: string, idx: number) => {
+        if (playingIndex === idx) {
+            audioRef.current?.pause();
+            setPlayingIndex(null);
+            return;
+        }
+
+        if (audioRef.current) {
+            audioRef.current.pause();
+        }
+
+        const audio = new Audio(vn);
+        audioRef.current = audio;
+        setPlayingIndex(idx);
+        audio.play();
+        audio.onended = () => setPlayingIndex(null);
+    };
 
     const currentCat = categories.find(c => c.id === note.category);
 
@@ -45,7 +91,8 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
         const reader = new FileReader();
         reader.onload = (event) => {
             if (event.target?.result) {
-                setNote({ ...note, images: [...note.images, event.target.result as string] });
+                const newAttachment = { id: crypto.randomUUID(), type: 'image' as const, data: event.target.result as string };
+                setNote({ ...note, attachments: [...note.attachments, newAttachment] });
             }
         };
         reader.readAsDataURL(file);
@@ -88,42 +135,66 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
         setNote({ ...note, content: lines.join('\n') });
     };
 
-    // Drag and Drop Logic
-    const handleDragStart = (e: React.DragEvent, index: number) => {
+    // Unified Drag and Drop Logic (Touch & Mouse)
+    const handleDragStart = (e: React.DragEvent | React.TouchEvent, index: number) => {
         setDraggedIndex(index);
-        e.dataTransfer.effectAllowed = 'move';
-        const target = e.target as HTMLElement;
+        if ('dataTransfer' in e) {
+            e.dataTransfer.effectAllowed = 'move';
+        }
+        const target = e.currentTarget as HTMLElement;
         target.classList.add('dragging');
     };
 
-    const handleDragOver = (e: React.DragEvent, index: number) => {
-        e.preventDefault();
+    const handleDragOver = (e: React.DragEvent | React.TouchEvent, index: number) => {
+        if ('preventDefault' in e) e.preventDefault();
         if (draggedIndex === null || draggedIndex === index) return;
         setDropIndex(index);
     };
 
-    const handleDrop = (e: React.DragEvent, index: number) => {
-        e.preventDefault();
+    const handleDrop = (e: React.DragEvent | React.TouchEvent, index: number) => {
+        if ('preventDefault' in e) e.preventDefault();
         if (draggedIndex === null || draggedIndex === index) {
             setDropIndex(null);
+            setDraggedIndex(null);
             return;
         }
         
-        const newImages = [...note.images];
-        const draggedImage = newImages[draggedIndex];
-        newImages.splice(draggedIndex, 1);
-        newImages.splice(index, 0, draggedImage);
+        const currentList = [...(note.attachments || [])];
+        const item = currentList[draggedIndex];
+        currentList.splice(draggedIndex, 1);
+        currentList.splice(index, 0, item);
         
-        setNote({ ...note, images: newImages });
+        setNote({ ...note, attachments: currentList });
         setDraggedIndex(null);
         setDropIndex(null);
     };
 
-    const handleDragEnd = (e: React.DragEvent) => {
+    const handleDragEnd = (e: React.DragEvent | React.TouchEvent) => {
         setDraggedIndex(null);
         setDropIndex(null);
-        const target = e.target as HTMLElement;
+        const target = e.currentTarget as HTMLElement;
         target.classList.remove('dragging');
+    };
+
+    // Touch support helpers
+    const handleTouchMove = (e: React.TouchEvent, index: number) => {
+        const touch = e.touches[0];
+        const element = document.elementFromPoint(touch.clientX, touch.clientY);
+        const dropZone = element?.closest('[data-drop-index]');
+        if (dropZone) {
+            const di = parseInt(dropZone.getAttribute('data-drop-index') || '-1');
+            if (di !== -1) {
+                setDropIndex(di);
+            }
+        }
+    };
+
+    const handleTouchEnd = (e: React.TouchEvent, index: number) => {
+        if (dropIndex !== null) {
+            handleDrop(e, dropIndex);
+        } else {
+            handleDragEnd(e);
+        }
     };
 
     return (
@@ -195,7 +266,15 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
                             <button onClick={() => applyFormatting('**')} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title={t('bold')}><span className="material-symbols-rounded">format_bold</span></button>
                             <button onClick={() => applyFormatting('*')} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title={t('italic')}><span className="material-symbols-rounded">format_italic</span></button>
                             <button onClick={() => applyFormatting('++', '++')} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title={t('underline')}><span className="material-symbols-rounded">format_underlined</span></button>
-                            <button onClick={toggleChecklist} className={`p-2.5 rounded-xl transition-all ${note.isChecklist ? 'bg-indigo-500 text-white' : 'hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500'}`} title={t('checklist')}><span className="material-symbols-rounded">format_list_bulleted</span></button>
+                            <button onClick={() => applyFormatting('~~', '~~')} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title="Strike"><span className="material-symbols-rounded">format_strikethrough</span></button>
+                            <button onClick={() => applyFormatting('# ')} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title="H1"><span className="material-symbols-rounded">format_h1</span></button>
+                            <button onClick={() => applyFormatting('## ')} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title="H2"><span className="material-symbols-rounded">format_h2</span></button>
+                            <button onClick={() => applyFormatting('### ')} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title="H3"><span className="material-symbols-rounded">format_h3</span></button>
+                            <button onClick={() => applyFormatting('> ')} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title="Quote"><span className="material-symbols-rounded">format_quote</span></button>
+                            <button onClick={() => applyFormatting('- ')} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title="List"><span className="material-symbols-rounded">format_list_bulleted</span></button>
+                            <button onClick={() => applyFormatting('`')} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title="Code"><span className="material-symbols-rounded">code</span></button>
+                            <button onClick={() => applyFormatting('\n---\n')} className="p-2.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition-colors" title="Line"><span className="material-symbols-rounded">horizontal_rule</span></button>
+                            <button onClick={toggleChecklist} className={`p-2.5 rounded-xl transition-all ${note.isChecklist ? 'bg-indigo-500 text-white' : 'hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-indigo-500'}`} title={t('checklist')}><span className="material-symbols-rounded">fact_check</span></button>
                         </div>
                         
                         <div className="flex items-center gap-1 pl-1">
@@ -327,29 +406,57 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
 
                     {/* Attachments Area */}
                     <div className="mt-8 space-y-6">
-                        {note.images.length > 0 && (
-                            <div className={`grid gap-4  stagger-3 ${isViewMode ? (note.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2') : 'grid-cols-1'}`}>
-                                {note.images.map((img, idx) => (
+                        {(note.attachments?.length || 0) > 0 && (
+                            <div className="grid grid-cols-1 gap-4 stagger-3">
+                                {note.attachments.map((att, idx) => (
                                     <div 
-                                        key={`img-${idx}`} 
+                                        key={att.id}
                                         draggable={!isViewMode}
+                                        data-drop-index={idx}
                                         onDragStart={(e) => handleDragStart(e, idx)}
                                         onDragOver={(e) => handleDragOver(e, idx)}
                                         onDrop={(e) => handleDrop(e, idx)}
                                         onDragEnd={handleDragEnd}
+                                        onTouchStart={(e) => handleDragStart(e, idx)}
+                                        onTouchMove={(e) => handleTouchMove(e, idx)}
+                                        onTouchEnd={(e) => handleTouchEnd(e, idx)}
                                         className={`relative group rounded-[32px] overflow-hidden glass-panel border-white/5 transition-all duration-300 shadow-xl
                                                    ${draggedIndex === idx ? 'opacity-40 scale-95 ring-2 ring-indigo-500' : 'opacity-100'} 
-                                                   ${dropIndex === idx ? 'scale-105 ring-2 ring-indigo-500/50' : ''} 
-                                                   ${!isViewMode ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}`}
+                                                    ${dropIndex === idx ? 'scale-105 ring-2 ring-indigo-500/50' : ''} 
+                                                   ${!isViewMode ? 'cursor-grab active:cursor-grabbing touch-none' : 'cursor-default'}`}
                                     >
-                                        <img src={img} alt="Attachment" className="w-full h-auto object-cover pointer-events-none" />
+                                        {att.type === 'voice' ? (
+                                            <div className="flex items-center gap-4 p-5 bg-indigo-500/5 dark:bg-indigo-500/10">
+                                                <button 
+                                                    onClick={() => playVoiceNote(att.data, idx)}
+                                                    className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-lg transition-all active:scale-90 ${playingIndex === idx ? 'bg-red-500 shadow-red-500/30' : 'bg-gradient-to-tr from-indigo-500 to-indigo-600 text-white shadow-indigo-500/30'}`}
+                                                >
+                                                    <span className="material-symbols-rounded text-2xl font-bold">
+                                                        {playingIndex === idx ? 'stop' : 'play_arrow'}
+                                                    </span>
+                                                </button>
+                                                <div className="flex-1">
+                                                    <div className="flex justify-between items-center mb-2">
+                                                        <span className="text-[10px] font-extrabold text-indigo-500 dark:text-indigo-400 uppercase tracking-widest">{t('voiceNote')}</span>
+                                                        <span className="text-[10px] text-slate-400 font-bold">{t('audioClip')}</span>
+                                                    </div>
+                                                    <div className="h-2 bg-indigo-500/10 dark:bg-white/10 rounded-full overflow-hidden">
+                                                        <div className="w-full h-full bg-indigo-500 rounded-full"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className={att.type === 'drawing' ? 'bg-white p-4' : ''}>
+                                                <img src={att.data} alt="Attachment" className={`w-full h-auto ${att.type === 'image' ? 'object-cover' : 'object-contain'} pointer-events-none`} />
+                                            </div>
+                                        )}
                                         
                                         {!isViewMode && (
                                             <>
-                                                <button onClick={() => setNote({ ...note, images: note.images.filter((_, i) => i !== idx) })} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-md hover:bg-red-500">
+                                                <button onClick={() => setNote({ ...note, attachments: note.attachments.filter((_, i) => i !== idx) })} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-md hover:bg-red-500 z-10">
                                                     <span className="material-symbols-rounded text-lg">delete</span>
                                                 </button>
-                                                <div className="absolute top-4 left-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="absolute top-4 left-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                                                     <div className="w-10 h-10 rounded-full bg-indigo-500/80 backdrop-blur-md text-white flex items-center justify-center">
                                                         <span className="material-symbols-rounded text-lg">drag_indicator</span>
                                                     </div>
@@ -360,38 +467,11 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
                                 ))}
                             </div>
                         )}
-                        
-                        {/* Voice Notes */}
-                        {note.voiceNotes.length > 0 && (
-                            <div className="grid grid-cols-1 gap-4  stagger-4">
-                                {note.voiceNotes.map((vn, idx) => (
-                                    <div key={`vn-${idx}`} className="flex items-center gap-4 p-5 rounded-[28px] glass-panel bg-indigo-500/5 dark:bg-indigo-500/10 border-indigo-500/20 group hover:shadow-lg transition-all">
-                                        <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/30">
-                                            <span className="material-symbols-rounded text-2xl font-bold">play_arrow</span>
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="flex justify-between items-center mb-2">
-                                                <span className="text-[10px] font-extrabold text-indigo-500 dark:text-indigo-400 uppercase tracking-widest">{t('voiceNote')} {idx + 1}</span>
-                                                <span className="text-[10px] text-slate-400 font-bold">{t('audioClip')}</span>
-                                            </div>
-                                            <div className="h-2 bg-indigo-500/10 dark:bg-white/10 rounded-full overflow-hidden">
-                                                <div className="w-full h-full bg-indigo-500 rounded-full"></div>
-                                            </div>
-                                        </div>
-                                        {!isViewMode && (
-                                            <button onClick={() => setNote({ ...note, voiceNotes: note.voiceNotes.filter((_, i) => i !== idx) })} className="w-10 h-10 rounded-full hover:bg-red-500/10 text-slate-400 hover:text-red-500 transition-all shrink-0 flex items-center justify-center">
-                                                <span className="material-symbols-rounded">delete</span>
-                                            </button>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
                     </div>
 
                     {/* Tags */}
                     {(note.tags.length > 0 || !isViewMode) && (
-                        <div className="flex flex-wrap gap-3 mt-10  stagger-4">
+                        <div className="flex flex-wrap gap-3 mt-10 stagger-4">
                             {note.tags.map(tag => (
                                 <div key={tag} className="flex items-center gap-2 px-4 py-2 rounded-full glass-panel bg-white dark:bg-white/5 border-black/5 dark:border-white/5 text-slate-600 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest group shadow-sm transition-all hover:border-indigo-500/30">
                                     <span className="material-symbols-rounded text-[14px] opacity-60 text-indigo-500">sell</span>
@@ -444,12 +524,18 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
             <DrawingModal 
                 isOpen={isDrawingOpen} 
                 onClose={() => setIsDrawingOpen(false)} 
-                onSave={(data) => setNote({ ...note, drawings: [...note.drawings, data] })} 
+                onSave={(data) => {
+                    const newAtt = { id: crypto.randomUUID(), type: 'drawing' as const, data };
+                    setNote({ ...note, attachments: [...note.attachments, newAtt] });
+                }} 
             />
             <VoiceNoteModal 
                 isOpen={isVoiceOpen} 
-                onClose={() => setIsVoiceOpen(true)} 
-                onSave={(data) => setNote({ ...note, voiceNotes: [...note.voiceNotes, data] })} 
+                onClose={() => setIsVoiceOpen(false)} 
+                onSave={(data) => {
+                    const newAtt = { id: crypto.randomUUID(), type: 'voice' as const, data };
+                    setNote({ ...note, attachments: [...note.attachments, newAtt] });
+                }} 
             />
         </div>
     );

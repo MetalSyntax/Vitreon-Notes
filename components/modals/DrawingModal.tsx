@@ -65,8 +65,14 @@ export const DrawingModal: React.FC<DrawingModalProps> = ({ isOpen, onClose, onS
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col h-[70vh]">
+        <div 
+            className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={onClose}
+        >
+            <div 
+                className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col h-[70vh]"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div className="p-4 border-b flex justify-between items-center">
                     <h3 className="font-bold text-slate-800">{t('sketch')}</h3>
                     <div className="flex gap-2">

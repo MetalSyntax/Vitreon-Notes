@@ -1,3 +1,9 @@
+export interface Attachment {
+    id: string;
+    type: 'image' | 'drawing' | 'voice';
+    data: string;
+}
+
 export interface Note {
     id: string;
     title: string;
@@ -9,9 +15,10 @@ export interface Note {
     lockPin?: string; // Simple PIN storage
     isChecklist: boolean;
     tags: string[];
-    images: string[]; // Base64 strings
-    drawings: string[]; // Base64 strings
-    voiceNotes: string[]; // Base64 audio strings
+    images: string[]; // Legacy
+    drawings: string[]; // Legacy
+    voiceNotes: string[]; // Legacy
+    attachments: Attachment[];
     createdAt: number;
     updatedAt: number;
 }

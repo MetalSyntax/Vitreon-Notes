@@ -30,7 +30,10 @@ export default function App() {
     const [view, setView] = useState<'home' | 'editor' | 'categories' | 'settings' | 'profile'>('home');
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [notes, setNotes] = useState<Note[]>([]);
-    const [categories, setCategories] = useState<Category[]>(CATEGORIES(t));
+    const [categories, setCategories] = useState<Category[]>(() => {
+        const saved = localStorage.getItem('vitreon_categories');
+        return saved ? JSON.parse(saved) : CATEGORIES(t);
+    });
     const [currentNote, setCurrentNote] = useState<Note | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -79,7 +82,7 @@ export default function App() {
         const newNote: Note = {
             id: crypto.randomUUID(), title: '', content: '', category: DEFAULT_CATEGORY,
             isPinned: false, isArchived: false, isLocked: false, isChecklist: false,
-            tags: [], images: [], drawings: [], voiceNotes: [],
+            tags: [], images: [], drawings: [], voiceNotes: [], attachments: [],
             createdAt: Date.now(), updatedAt: Date.now()
         };
         setCurrentNote(newNote);
@@ -216,7 +219,7 @@ export default function App() {
                             content: content,
                             category: DEFAULT_CATEGORY,
                             isPinned: false, isArchived: false, isLocked: false, isChecklist: false,
-                            tags: [], images: [], drawings: [], voiceNotes: [],
+                            tags: [], images: [], drawings: [], voiceNotes: [], attachments: [],
                             createdAt: Date.now(), updatedAt: Date.now()
                         };
                         await saveNote(newNote);
@@ -260,13 +263,19 @@ export default function App() {
     };
 
     const handleAddCategory = (cat: Category) => {
-        setCategories([...categories, cat]);
+        const updated = [...categories, cat];
+        setCategories(updated);
+        localStorage.setItem('vitreon_categories', JSON.stringify(updated));
         showToast(t('categoryAdded'));
     };
 
     const handleDeleteCategory = (id: string) => {
-        if (id === DEFAULT_CATEGORY) return alert(t('categoryDeleteError'));
-        setCategories(categories.filter(c => c.id !== id));
+        if (id === DEFAULT_CATEGORY || CATEGORIES(t).some(c => c.id === id)) {
+            return alert(t('categoryDeleteError'));
+        }
+        const updated = categories.filter(c => c.id !== id);
+        setCategories(updated);
+        localStorage.setItem('vitreon_categories', JSON.stringify(updated));
         showToast(t('categoryRemoved'));
     };
 

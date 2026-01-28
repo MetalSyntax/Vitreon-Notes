@@ -71,8 +71,22 @@ export const VoiceNoteModal: React.FC<VoiceNoteModalProps> = ({ isOpen, onClose,
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="glass-panel text-white rounded-[40px] w-full max-w-sm shadow-2xl p-8 flex flex-col items-center">
+        <div 
+            className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={onClose}
+        >
+            <div 
+                className="glass-panel text-white rounded-[40px] w-full max-w-sm shadow-2xl p-8 flex flex-col items-center relative"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* Close Button */}
+                <button 
+                    onClick={onClose}
+                    className="absolute top-6 right-6 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+                >
+                    <span className="material-symbols-rounded text-xl">close</span>
+                </button>
+
                 <div className="w-20 h-20 rounded-full bg-indigo-500/20 flex items-center justify-center mb-6">
                     <span className={`material-symbols-rounded text-4xl ${isRecording ? 'text-red-500 animate-pulse' : 'text-indigo-400'}`}>mic</span>
                 </div>

@@ -143,7 +143,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                         </div>
 
                         {/* Google Drive Section */}
-                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-black/5 dark:border-white/5">
+                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-black/5 dark:border-white/5 hidden">
                             <button onClick={onExportGDrive} className="w-full flex items-center gap-4 p-6 rounded-[28px] bg-blue-500/5 dark:bg-blue-500/10 border-2 border-transparent hover:border-blue-500/30 transition-all group">
                                 <div className="w-12 h-12 rounded-2xl bg-blue-500 flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
                                     <span className="material-symbols-rounded">cloud_upload</span>

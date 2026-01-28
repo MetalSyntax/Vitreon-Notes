@@ -29,6 +29,9 @@ export const RichText: React.FC<RichTextProps> = ({ content, className }) => {
         // Underline: ++text++
         .replace(/\+\+(.*?)\+\+/g, '<u class="underline decoration-indigo-500/50 decoration-2 underline-offset-4">$1</u>')
         
+        // Strikethrough: ~~text~~
+        .replace(/~~(.*?)~~/g, '<del class="line-through opacity-50">$1</del>')
+        
         // Blockquotes: > text
         .replace(/^> (.*$)/gm, '<blockquote class="border-l-4 border-indigo-500 bg-indigo-500/5 px-4 py-2 my-4 italic text-slate-600 dark:text-slate-400">$1</blockquote>')
         
@@ -36,7 +39,10 @@ export const RichText: React.FC<RichTextProps> = ({ content, className }) => {
         .replace(/^\s*[-*] (.*$)/gm, '<li class="ml-4 list-disc text-slate-700 dark:text-slate-300">$1</li>')
         
         // Wrap adjacent <li> in <ul> (Simplified for this parser)
-        .replace(/(<li.*<\/li>)/g, '<ul class="my-3 space-y-1">$1</ul>')
+        .replace(/(<li(?:(?!<\/ul>).)*<\/li>)/s, '<ul class="my-3 space-y-1">$1</ul>')
+        
+        // Links: [text](url)
+        .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-indigo-500 hover:underline font-bold">$1</a>')
         
         // Horizontal Rule: ---
         .replace(/^---$/gm, '<hr class="my-6 border-slate-200 dark:border-white/10" />')

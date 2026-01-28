@@ -8,8 +8,18 @@ interface CategoryModalProps {
     onSave: (cat: Category) => void;
 }
 
-const COLORS = ['blue', 'emerald', 'amber', 'purple', 'rose', 'slate'];
-const ICONS = ['work', 'person', 'lightbulb', 'flight', 'fitness_center', 'description', 'shopping_cart', 'favorite', 'home', 'star'];
+const COLORS = [
+    'blue', 'emerald', 'amber', 'purple', 'rose', 'slate', 
+    'cyan', 'orange', 'pink', 'lime', 'indigo', 'violet', 'fuchsia', 'teal', 'red', 'yellow'
+];
+const ICONS = [
+    'work', 'person', 'lightbulb', 'flight', 'fitness_center', 'description', 
+    'shopping_cart', 'favorite', 'home', 'star', 'school', 'restaurant', 
+    'payments', 'medical_services', 'directions_car', 'celebration', 'palette', 
+    'menu_book', 'pets', 'camera_alt', 'eco', 'savings', 'translate', 'code', 
+    'smart_toy', 'sports_esports', 'theater_comedy', 'monitoring', 'history_edu', 
+    'construction', 'volunteer_activism', 'rocket_launch', 'terminal'
+];
 
 export const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, onSave }) => {
     const { t } = useI18n();
